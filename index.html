@@ -27,12 +27,30 @@
 			color: #e3e3e3;
 			font-family: 'Antic', sans-serif;
 		}*/
+
+		
+		#cushionOptions1 {
+			width: 150px;
+			height: 50px;
+			
+			background-color: red;
+
+			position: absolute;
+    		bottom: 0px;
+    		left: 0px;
+    		z-index: 10000;
+		}
+
+		form p{
+			display: inline;
+		}
 	
 		</style>
 		<script src="lib/three.min.js"></script>
 		<script src="lib/stats.min.js"></script>
 		<script src="lib/OBJLoader.js"></script>
 		<script src="lib/OrbitControls.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 		<!--<link href="https://fonts.googleapis.com/css?family=Antic&display=swap" rel="stylesheet">-->
 
         <script type="text/x-glsl" id="vertex">
@@ -47,9 +65,9 @@
 				uVv = uv;
 				gl_Position = projectionMatrix * vPos;
 			}
-			</script>
+		</script>
 	
-			<script type="text/x-glsl" id="fragment">
+		<script type="text/x-glsl" id="fragment">
 			varying vec3 vNormal;
 			varying vec3 vPosition;
 			varying vec2 uVv;
@@ -149,7 +167,9 @@
 				// gamma encode the final value
 				gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
 			}
-			</script>
+		</script>
+
+		
 
 	</head>
 	<body>
@@ -317,30 +337,36 @@
 
 		
 		function Update() {
-
 			requestAnimationFrame(Update);
-
-			if(loadingComplete){ // se il caricamento del modello dell'isola grande è terminato
-
-				
-				
-				}
-				
+			
 			stats.update();
-			Render();
-
-			
-			
+			guiUpdate()
+			Render();	
 		}
 		
-
+		function guiUpdate(){
+			/*if($('#greenMatCheck').prop('checked')) {
+				alert("ok");
+			} else {
+				
+			}*/ //DA SISTEMARE
+			$("#greenMatCheck").change(function() {
+				if($(this).prop('checked')) {
+					//alert("Checked Box Selected");
+				} else {
+					
+				}
+			});
+		}
 
 		function Render() {
 			updateUniforms();
 			renderer.render(scene, camera);
-
+			
 		}
 		
+		
+
 		function updateUniforms() {
 
 			uniforms.clight.value = new THREE.Vector3(
@@ -365,6 +391,16 @@
 			<p>
 				
 			</p>
+		</div>
+		<div id="cushionOptions1">
+			<form>
+				<input type="checkbox" id="greenMatCheck">
+				<p>green</p>
+
+				<input type="checkbox" id="orangeMatCheck">
+				<p>orange</p>
+			</form>
+			
 		</div>
 	</body>
 </html>
