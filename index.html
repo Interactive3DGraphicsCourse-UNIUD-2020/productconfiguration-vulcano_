@@ -147,9 +147,9 @@
 		}
 
 		var ambientLightParameters = {
-			red: 0.2,
-			green: 0.2,
-			blue: 0.2,
+			red: 0.3,
+			green: 0.3,
+			blue: 0.3,
 			intensity: 1.0,
 		}
 
@@ -178,8 +178,9 @@
 		fs = document.getElementById("fragment").textContent;
 
 		ourMaterial = new THREE.ShaderMaterial({ uniforms: uniforms, vertexShader: vs, fragmentShader: fs });
-		uniforms.pointLightPosition.value = new THREE.Vector3(20, 20, 20);
+		uniforms.pointLightPosition.value = new THREE.Vector3(-25, 40, 60);
 
+		
 
 		function loadTexture(file) {
 			var texture = new THREE.TextureLoader().load(file , function ( texture ) {
