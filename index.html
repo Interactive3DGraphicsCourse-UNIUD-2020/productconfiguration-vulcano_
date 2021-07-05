@@ -84,7 +84,6 @@
 			uniform vec3 clight;
 			uniform vec3 cspec;
 			
-			uniform float roughness;
 
 			uniform sampler2D aoMap;
 			uniform vec2 textureRepeat;
@@ -93,8 +92,10 @@
 			uniform vec2 normalScale;
 
 			uniform sampler2D diffuseMap;
+			uniform sampler2D roughnessMap;
 
 			vec3 cdiff;
+			float roughness;
 			const float PI = 3.14159;
 
 			vec3 FSchlick(float lDoth) {
@@ -149,6 +150,8 @@
 				vec3 BRDFtotale;
 				//vec3 fresnelTotale;
 
+				roughness = texture2D( roughnessMap, uVv*textureRepeat).r; // no need to linearize roughness map
+
 				for(int i=0;i<2;i++){
 
 					vec4 lPosition = viewMatrix * vec4( pointLightPosition[i], 1.0 );
@@ -160,6 +163,8 @@
 					float lDoth = max(dot( l, h ),0.000001);
 					float nDoth = max(dot( n, h ),0.000001);
 					float vDoth = max(dot( v, h ),0.000001);
+
+					
 
 					vec3 fresnel = FSchlick(lDoth);
 					vec3 BRDF = (vec3(1.0)-fresnel)*cdiff/PI + fresnel*GSmith(nDotv,nDotl)*DGGX(nDoth,roughness*roughness)/
@@ -210,6 +215,7 @@
 		var diffuseMapOrange = loadTexture( "textures/cushion_diffuse_orange.jpg" );
 		var diffuseMapPurple = loadTexture( "textures/cushion_diffuse_purple.jpg" );
 		var aoMap = loadTexture( "textures/green_fabric/green_ao.jpg");
+		var roughnessMap = loadTexture( "textures/green_fabric/green_roughness.jpg");
 
 		var pointLight1Pos = new THREE.Vector3(-50, 40, 80);
 		var pointLight2Pos = new THREE.Vector3(-200, 20, -60);
@@ -217,7 +223,8 @@
 		var uniforms = {
 				cspec:	{ type: "v3", value: new THREE.Vector3(0.01,0.01,0.01) },
 				diffuseMap:	{ type: "t", value: diffuseMapGreen},
-				roughness: {type: "f", value: 0.7},
+				//roughness: {type: "f", value: 0.7},
+				roughnessMap:	{ type: "t", value: roughnessMap},
 				aoMap:	{ type: "t", value: aoMap },
 				textureRepeat: { type: "v2", value: new THREE.Vector2(10,10)},
 				normalMap:	{ type: "t", value: normalMap},
@@ -409,6 +416,7 @@
 					ambientLightParameters.red * ambientLightParameters.intensity,
 					ambientLightParameters.green * ambientLightParameters.intensity,
 					ambientLightParameters.blue * ambientLightParameters.intensity);
+			uniforms.roughnessMap.value = roughnessMap;
 			//uniforms.diffuseMap.value = diffuseMap;
 
 		}
