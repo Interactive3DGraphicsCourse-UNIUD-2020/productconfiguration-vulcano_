@@ -29,20 +29,28 @@
 		}*/
 
 		
-		#cushionOptions1 {
-			width: 150px;
-			height: 50px;
-			
-			background-color: red;
+		#cushionOptionsClassic {
+			width: 60%;
+			height: 2em;
 
 			position: absolute;
-    		bottom: 0px;
-    		left: 0px;
+    		bottom: 20%;
+    		left: 20%;
     		z-index: 10000;
+
+			text-align: center;
 		}
 
 		
-	
+
+		#cushionOptionsClassic input{
+			margin-top: -1px !important;
+			vertical-align: middle;
+		}	
+
+		#cushionOptionsClassic label{
+			margin-left: -6px;	
+		}
 		</style>
 		<script src="lib/three.min.js"></script>
 		<script src="lib/stats.min.js"></script>
@@ -200,6 +208,7 @@
 		var normalMap = loadTexture( "textures/cushion_normals.jpg" );
 		var diffuseMapGreen = loadTexture( "textures/cushion_diffuse_green.jpg" );
 		var diffuseMapOrange = loadTexture( "textures/cushion_diffuse_orange.jpg" );
+		var diffuseMapPurple = loadTexture( "textures/cushion_diffuse_purple.jpg" );
 		var aoMap = loadTexture( "textures/cushion_ambocc.jpg");
 
 		var pointLight1Pos = new THREE.Vector3(-50, 40, 80);
@@ -344,20 +353,22 @@
 		}
 		
 		function guiUpdate(){
-			/*if($('#greenMatCheck').prop('checked')) {
-				alert("ok");
-			} else {
-				
-			}*/ //DA SISTEMARE
+			
+			$("#greenMatCheck").change(function() {
+				if($(this).prop('checked')) {
+					uniforms.diffuseMap.value = diffuseMapGreen;
+				}
+			});
+
 			$("#orangeMatCheck").change(function() {
 				if($(this).prop('checked')) {
 					uniforms.diffuseMap.value = diffuseMapOrange;
 				}
 			});
 
-			$("#greenMatCheck").change(function() {
+			$("#purpleMatCheck").change(function() {
 				if($(this).prop('checked')) {
-					uniforms.diffuseMap.value = diffuseMapGreen;
+					uniforms.diffuseMap.value = diffuseMapPurple;
 				}
 			});
 
@@ -397,16 +408,17 @@
 				
 			</p>
 		</div>
-		<div id="cushionOptions1">
-			
-				
-				<input type="radio" name="cushion_color" id="greenMatCheck" checked>
-				<label>green</label>
+		<div id="cushionOptionsClassic">
+		
+			<input type="radio" name="cushion_color" id="greenMatCheck" checked>
+			<label>green</label>
 
-				<input type="radio" name="cushion_color" id="orangeMatCheck">
-				<label>orange</label>
-			
-			
+			<input type="radio" name="cushion_color" id="orangeMatCheck">
+			<label>orange</label>
+
+			<input type="radio" name="cushion_color" id="purpleMatCheck">
+			<label>purple</label>
+		
 		</div>
 	</body>
 </html>
