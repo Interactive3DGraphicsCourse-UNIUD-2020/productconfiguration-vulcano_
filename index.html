@@ -41,9 +41,7 @@
     		z-index: 10000;
 		}
 
-		form p{
-			display: inline;
-		}
+		
 	
 		</style>
 		<script src="lib/three.min.js"></script>
@@ -200,7 +198,8 @@
 		}
 
 		var normalMap = loadTexture( "textures/cushion_normals.jpg" );
-		var diffuseMap = loadTexture( "textures/cushion_diffuse_green.jpg" );
+		var diffuseMapGreen = loadTexture( "textures/cushion_diffuse_green.jpg" );
+		var diffuseMapOrange = loadTexture( "textures/cushion_diffuse_orange.jpg" );
 		var aoMap = loadTexture( "textures/cushion_ambocc.jpg");
 
 		var pointLight1Pos = new THREE.Vector3(-50, 40, 80);
@@ -208,7 +207,7 @@
 
 		var uniforms = {
 				cspec:	{ type: "v3", value: new THREE.Vector3(0.01,0.01,0.01) },
-				diffuseMap:	{ type: "t", value: diffuseMap},
+				diffuseMap:	{ type: "t", value: diffuseMapGreen},
 				roughness: {type: "f", value: 0.7},
 				aoMap:	{ type: "t", value: aoMap },
 				textureRepeat: { type: "v2", value: new THREE.Vector2(1,1)},
@@ -350,13 +349,19 @@
 			} else {
 				
 			}*/ //DA SISTEMARE
-			$("#greenMatCheck").change(function() {
+			$("#orangeMatCheck").change(function() {
 				if($(this).prop('checked')) {
-					//alert("Checked Box Selected");
-				} else {
-					
+					uniforms.diffuseMap.value = diffuseMapOrange;
 				}
 			});
+
+			$("#greenMatCheck").change(function() {
+				if($(this).prop('checked')) {
+					uniforms.diffuseMap.value = diffuseMapGreen;
+				}
+			});
+
+
 		}
 
 		function Render() {
@@ -393,13 +398,14 @@
 			</p>
 		</div>
 		<div id="cushionOptions1">
-			<form>
-				<input type="checkbox" id="greenMatCheck">
-				<p>green</p>
+			
+				
+				<input type="radio" name="cushion_color" id="greenMatCheck" checked>
+				<label>green</label>
 
-				<input type="checkbox" id="orangeMatCheck">
-				<p>orange</p>
-			</form>
+				<input type="radio" name="cushion_color" id="orangeMatCheck">
+				<label>orange</label>
+			
 			
 		</div>
 	</body>
