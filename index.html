@@ -292,6 +292,21 @@
 			// CARICAMENTO MODELLO
 			var loader = new THREE.OBJLoader();
 
+			/*loader.load(
+					// resource URL
+					"models/cushion.obj",
+					// Function when resource is loaded
+					function ( object ) {
+						var geometry = object.geometry;
+						var cushion = new THREE.Mesh( geometry, ourMaterial );
+						cushion.scale.set(0.3, 0.3, 0.3);
+						cushion.rotation.z = -110 * Math.PI/180;
+						cushion.rotation.y = 40 * Math.PI/180;
+						cushion.position.x = 100;
+						scene.add( cushion );
+					}
+				);*/
+
 			loader.load(
 				"models/cushion.obj",
 				function(obj){
@@ -321,10 +336,10 @@
 						//objects.push(mesh);}
 						loadingComplete = true;
 						console.log("OBJ");
+						
 					}
 				}
 			);
-
 
 		
 			//PIANO
@@ -332,6 +347,7 @@
 			var planeMaterial = new THREE.MeshBasicMaterial( { color: "#cccccc" } );
 			var plane = new THREE.Mesh( planeGeometry, planeMaterial );
 			scene.add( plane );
+			
 			
 			plane.rotation.x = - Math.PI/2;
 			plane.position.y = -60;
@@ -423,6 +439,7 @@
 
 		Start();
 		Update();
+		console.log(scene);
 			
 
 		</script>
