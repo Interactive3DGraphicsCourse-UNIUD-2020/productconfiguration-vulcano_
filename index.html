@@ -217,8 +217,8 @@
 		var aoMap = loadTexture( "textures/green_fabric/green_ao.jpg");
 		var roughnessMap = loadTexture( "textures/green_fabric/green_roughness.jpg");
 
-		var pointLight1Pos = new THREE.Vector3(-50, 40, 80);
-		var pointLight2Pos = new THREE.Vector3(-200, 20, -60);
+		var pointLight1Pos = new THREE.Vector3(-60, 40, 40);
+		var pointLight2Pos = new THREE.Vector3(60, 40, -40);
 
 		var uniforms = {
 				cspec:	{ type: "v3", value: new THREE.Vector3(0.01,0.01,0.01) },
@@ -276,7 +276,7 @@
 			//renderer.shadowMap.enabled = true;
 			document.body.appendChild( renderer.domElement );
 			
-			camera.position.set( 0, 40, 250 );
+			camera.position.set( 0, 70, 210 );
 			camera.lookAt( new THREE.Vector3( 0, 0, 0 ) );
 
 
@@ -306,6 +306,7 @@
 						scene.add( cushion );
 					}
 				);*/
+				
 
 			loader.load(
 				"models/cushion.obj",
@@ -320,16 +321,18 @@
 
 						cushion1.scale.set(0.3, 0.3, 0.3);
 						cushion1.rotation.z = 110 * Math.PI/180;
-						cushion1.rotation.y = -60 * Math.PI/180;
-						cushion1.position.x = -150;
+						cushion1.rotation.y = -50 * Math.PI/180;
+						cushion1.position.x = -80;
 
 						cushion2.scale.set(0.3, 0.3, 0.3);
 						cushion2.rotation.z = -110 * Math.PI/180;
-						cushion2.rotation.y = 40 * Math.PI/180;
-						cushion2.position.x = 100;
+						cushion2.rotation.y = 50 * Math.PI/180;
+						cushion2.position.x = 80;
 
-						cushion1.castShadow = true;
+						/*cushion1.castShadow = true;
 						cushion2.castShadow = true;
+						cushion1.receiveShadow = true;
+						cushion2.receiveShadow = true;*/
 
 						scene.add( cushion1 );
 						scene.add( cushion2 );
@@ -341,19 +344,28 @@
 				}
 			);
 
-		
+			//LIGHT
+			/*var light = new THREE.DirectionalLight( 0xffffff );
+			light.position.set( 0, 1, 1 ).normalize();
+			light.castShadow=true;
+			light.shadow.camera.near = 0.5;       
+			light.shadow.camera.far = 5000;      
+			light.shadow.camera.left = -500;
+			light.shadow.camera.bottom = -500;
+			light.shadow.camera.right = 500;
+			light.shadow.camera.top = 500;
+			scene.add(light);*/
+
 			//PIANO
-			var planeGeometry = new THREE.CircleGeometry( 280, 150 );
-			var planeMaterial = new THREE.MeshBasicMaterial( { color: "#cccccc" } );
+			var planeGeometry = new THREE.CircleGeometry( 230, 150 );
+			var planeMaterial = new THREE.MeshBasicMaterial( { color: "#cccccc" } ); //NEL CASO CAMBIA MATERIALE
 			var plane = new THREE.Mesh( planeGeometry, planeMaterial );
-			scene.add( plane );
-			
-			
 			plane.rotation.x = - Math.PI/2;
 			plane.position.y = -60;
-			plane.position.z = -100;
-			plane.castShadow = false;
-			plane.receiveShadow = true;
+			plane.position.z = -80;
+			//plane.castShadow = false;
+			//plane.receiveShadow = true;
+			scene.add( plane );
 			
 
 			// STATS
