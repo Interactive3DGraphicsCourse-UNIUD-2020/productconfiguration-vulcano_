@@ -29,7 +29,7 @@
 
 		
 		#cushionOptions {
-			width: 19em;
+			width: 21em;
 			position: absolute;
 			top: 0px;
 			right: 0%;
@@ -39,6 +39,37 @@
 			padding: 2em;
 		}
 
+		#materialButtons input{
+			background-color: white;
+			border: 1px solid #ccc;
+			color: #4CAF50;
+			padding: 0.4em 0.8em;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 0.9em;
+			margin: 6px -0.1em;
+    		width: 6em;
+			cursor: pointer;
+		}
+
+		#materialButtons input:hover{
+			background-color: #4CAF50;
+			color: white;
+		}
+
+		#materialButtons input:active{
+			background-color: #427a44;
+		}
+
+		#materialButtons input:first-of-type{
+			border-radius: 10px 0px 0px 10px; 
+		}
+
+		#materialButtons input:last-of-type{
+			border-radius: 0px 10px 10px 0px; 
+		}
+
 		.materialOptions{
 			padding-top: 2em;
 		}
@@ -46,11 +77,13 @@
 		.materialOptions input{
 			margin-top: -1px !important;
 			vertical-align: middle;
+			cursor: pointer;
 		}	
 
 		.materialOptions label{
 			margin-left: -6px;	
 		}
+
 
 		</style>
 		<script src="lib/three.min.js"></script>
