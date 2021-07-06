@@ -200,7 +200,9 @@
 
 			uniform vec3 pointLightPosition; // in world space
 			uniform vec3 clight;
-			//uniform vec3 cdiff;
+			
+			uniform vec3 ambientLight;
+			uniform sampler2D aoMap;
 
 			uniform vec2 textureRepeat;
 			uniform sampler2D normalMap;
@@ -209,6 +211,7 @@
 			uniform sampler2D diffuseMap;
 			vec3 cdiff;
 
+			
 			const float PI = 3.14159;
 	
 			#extension GL_OES_standard_derivatives : enable
@@ -244,13 +247,135 @@
 				// formula would be:
 				// outRadiance = clight * PI * cdiff/PI * nDotl, the two PI cancel out
 	
-				vec3 outRadiance = clight * nDotl * cdiff;
+				vec3 diffRadiance = clight * nDotl * cdiff;
 	
+				//vec3 outRadiance = PI* diffRadiance + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;;
 				// gamma encode the final value
 	
-				gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
+				gl_FragColor = vec4(pow( diffRadiance, vec3(1.0/2.2)), 1.0);
 				//gl_FragColor = vec4(vNormal, 1.0);
 			}
+			</script>
+
+			<script type="text/x-glsl" id="vertex-spec">
+				varying vec3 vNormal;
+				varying vec3 vPosition;
+				varying vec2 uVv;
+		
+				void main() {
+					vec4 vPos = modelViewMatrix * vec4( position, 1.0 );
+					vPosition = vPos.xyz;
+					vNormal = normalMatrix * normal;
+					uVv = uv;
+					gl_Position = projectionMatrix * vPos;
+				}
+			</script>
+		
+			<script type="text/x-glsl" id="fragment-spec">
+				varying vec3 vNormal;
+				varying vec3 vPosition;
+				varying vec2 uVv;
+				uniform vec3 pointLightPosition[2]; // in world space
+	
+				uniform vec3 ambientLight;
+	
+				uniform vec3 clight;
+				uniform vec3 cspec;
+				
+	
+				uniform sampler2D aoMap;
+				uniform vec2 textureRepeat;
+	
+				uniform sampler2D normalMap;
+				uniform vec2 normalScale;
+	
+				//uniform sampler2D diffuseMap;
+				uniform sampler2D roughnessMap;
+	
+				uniform vec3 cdiff;
+				float roughness;
+				const float PI = 3.14159;
+	
+				vec3 FSchlick(float lDoth) {
+					return (cspec + (vec3(1.0)-cspec)*pow(1.0 - lDoth,5.0));
+				}
+	
+				float DGGX(float nDoth, float alpha) {
+					float alpha2 = alpha*alpha;
+					float d = nDoth*nDoth*(alpha2-1.0)+1.0;
+					return (  alpha2 / (PI*d*d));
+				}
+	
+				float G1(float dotProduct, float k) {
+					return (dotProduct / (dotProduct*(1.0-k) + k) );
+				}
+	
+				float GSmith(float nDotv, float nDotl) {
+						float k = roughness*roughness;
+						return G1(nDotl,k)*G1(nDotv,k);
+				}
+	
+				#extension GL_OES_standard_derivatives : enable
+		
+				vec3 perturbNormal2Arb( vec3 eye_pos, vec3 surf_norm ) {
+		
+					vec3 q0 = dFdx( eye_pos.xyz );
+					vec3 q1 = dFdy( eye_pos.xyz );
+					vec2 st0 = dFdx( uVv.st );
+					vec2 st1 = dFdy( uVv.st );
+		
+					vec3 S = normalize(  q0 * st1.t - q1 * st0.t );
+					vec3 T = normalize( -q0 * st1.s + q1 * st0.s );
+					vec3 N =  surf_norm ;
+		
+					vec3 mapN = normalize(texture2D( normalMap, uVv*textureRepeat ).xyz * 2.0 - 1.0);
+					mapN.xy = normalScale * mapN.xy;
+					mat3 tsn = mat3( S, T, N );
+					return normalize( tsn * mapN );
+		
+				}
+		
+				void main() {
+	
+					vec3 n = perturbNormal2Arb( vPosition, normalize( vNormal ));
+					vec3 v = normalize( -vPosition);
+					float nDotv = max(dot( n, v ),0.000001);
+	
+					//cdiff = texture2D( diffuseMap, uVv*textureRepeat ).rgb;
+					// texture in sRGB, linearize
+					//cdiff = pow( cdiff, vec3(2.2));
+	
+					vec3 BRDFtotale;
+					//vec3 fresnelTotale;
+	
+					roughness = texture2D( roughnessMap, uVv*textureRepeat).r; // no need to linearize roughness map
+	
+					for(int i=0;i<2;i++){
+	
+						vec4 lPosition = viewMatrix * vec4( pointLightPosition[i], 1.0 );
+						vec3 l = normalize(lPosition.xyz - vPosition.xyz);
+						vec3 h = normalize( v + l);
+	
+						// small quantity to prevent divisions by 0
+						float nDotl = max(dot( n, l ),0.000001);
+						float lDoth = max(dot( l, h ),0.000001);
+						float nDoth = max(dot( n, h ),0.000001);
+						float vDoth = max(dot( v, h ),0.000001);
+	
+						
+	
+						
+						vec3 BRDF = FSchlick(lDoth)*GSmith(nDotv,nDotl)*DGGX(nDoth,roughness*roughness)/
+							(4.0*nDotl*nDotv);
+	
+						BRDFtotale += BRDF*clight*nDotl;
+						//fresnelTotale += fresnel;
+					}
+	
+					vec3 outRadiance = PI* BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;;
+					// gamma encode the final value
+					gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
+				}
 			</script>
 
 	</head>
@@ -289,10 +414,16 @@
 		var aoMap = loadTexture( "textures/green_fabric/green_ao.jpg");
 		var roughnessMap = loadTexture( "textures/green_fabric/green_roughness.jpg");
 
+		//texture shiny
+		var normalMapShiny = loadTexture( "textures/shiny_metal/shiny_metal_normal.png" );
+		var diffuseMapShiny = loadTexture( "textures/shiny_metal/shiny_metal_diffuse.png" );
+		var aoMapShiny = loadTexture( "textures/shiny_metal/shiny_metal_ao.png");
+		var roughnessMapShiny = loadTexture( "textures/shiny_metal/shiny_metal_roughness.png");
+
 		var pointLight1Pos = new THREE.Vector3(-60, 40, 40);
 		var pointLight2Pos = new THREE.Vector3(60, 40, -40);
 
-		var uniformsShiny = {
+		var uniformsLeather = {
 				cspec:	{ type: "v3", value: new THREE.Vector3(0.01,0.01,0.01) },
 				diffuseMap:	{ type: "t", value: diffuseMapGreen},
 				//roughness: {type: "f", value: 0.7},
@@ -302,8 +433,35 @@
 				normalMap:	{ type: "t", value: normalMap},
 				normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
 				pointLightPosition:{type:"v3", value: [pointLight1Pos,pointLight2Pos]},
-				ambientLight: { type: "v3", value: new THREE.Vector3() },
-				clight:	{ type: "v3", value: new THREE.Vector3() }
+				ambientLight: { type: "v3", value: new THREE.Vector3(
+					ambientLightParameters.red * ambientLightParameters.intensity,
+					ambientLightParameters.green * ambientLightParameters.intensity,
+					ambientLightParameters.blue * ambientLightParameters.intensity) },
+				clight:	{ type: "v3", value: new THREE.Vector3(
+				lightParameters.red * lightParameters.intensity,
+				lightParameters.green * lightParameters.intensity,
+				lightParameters.blue * lightParameters.intensity) }
+		};
+
+		var uniformsShiny = {
+				cspec:	{ type: "v3", value: new THREE.Vector3(0.1,0.7,0.7) },
+				//diffuseMap:	{ type: "t", value: diffuseMapShiny},
+				//roughness: {type: "f", value: 0.7},
+				cdiff: {type: "v3", value: new THREE.Vector3(0.3,0.3,0.3)},
+				roughnessMap:	{ type: "t", value: roughnessMap},
+				aoMap:	{ type: "t", value: aoMapShiny },
+				textureRepeat: { type: "v2", value: new THREE.Vector2(10,10)},
+				normalMap:	{ type: "t", value: normalMap},
+				normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
+				pointLightPosition:{type:"v3", value: [pointLight1Pos,pointLight2Pos]},
+				ambientLight: { type: "v3", value: new THREE.Vector3(
+					ambientLightParameters.red * ambientLightParameters.intensity,
+					ambientLightParameters.green * ambientLightParameters.intensity,
+					ambientLightParameters.blue * ambientLightParameters.intensity) },
+				clight:	{ type: "v3", value: new THREE.Vector3(
+				lightParameters.red * lightParameters.intensity,
+				lightParameters.green * lightParameters.intensity,
+				lightParameters.blue * lightParameters.intensity) }
 		};
 
 		
@@ -318,11 +476,13 @@
 			diffuseMap:	{ type: "t", value: diffuseMapGreen},
 			//cdiff:	{ type: "v3", value: new THREE.Vector3(cdiff.red,cdiff.green,cdiff.blue) },
 			pointLightPosition:	{ type: "v3", value: new THREE.Vector3(20, 20, 20) },
+			aoMap:	{ type: "t", value: aoMap },
 			clight:	{ type: "v3", value: new THREE.Vector3(
 			lightParameters.red * lightParameters.intensity,
 			lightParameters.green * lightParameters.intensity,
 			lightParameters.blue * lightParameters.intensity
 			) },
+			ambientLight: { type: "v3", value: new THREE.Vector3() },
 			textureRepeat: { type: "v2", value: new THREE.Vector2(10,10)},
 			normalMap:	{ type: "t", value: normalMap},
 			normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
@@ -330,15 +490,19 @@
 
 
 
-		vsShiny = document.getElementById("vertex").textContent;
-		fsShiny = document.getElementById("fragment").textContent;
+		vsLeather = document.getElementById("vertex").textContent;
+		vfLeather = document.getElementById("fragment").textContent;
 
 		vsFabric = document.getElementById("vertex-fabric").textContent;
 		fsFabric = document.getElementById("fragment-fabric").textContent;
 
+		vsShiny = document.getElementById("vertex-spec").textContent;
+		fsShiny = document.getElementById("fragment-spec").textContent;
 
-		shinyMaterial = new THREE.ShaderMaterial({ uniforms: uniformsShiny, vertexShader: vsShiny, fragmentShader: fsShiny });
+
+		LeatherMaterial = new THREE.ShaderMaterial({ uniforms: uniformsLeather, vertexShader: vsLeather, fragmentShader: vfLeather });
 		fabricMaterial = new THREE.ShaderMaterial({ uniforms: uniformsFabric, vertexShader: vsFabric, fragmentShader: fsFabric });
+		shinyMaterial = new THREE.ShaderMaterial({ uniforms: uniformsShiny, vertexShader: vsShiny, fragmentShader: fsShiny });
 		
 		
 		//uniforms.pointLight1Position.value = new THREE.Vector3(-25, 40, 60);
@@ -380,7 +544,7 @@
 
 
 
-            shinyMaterial.needsUpdate = true;
+            LeatherMaterial.needsUpdate = true;
 			//fabricMaterial.needsUpdate = true;
 
 			
@@ -416,8 +580,8 @@
 
 					function createNewGeometry(children){
 						var geometry = children.geometry;
-						var cushion1 = new THREE.Mesh( geometry, shinyMaterial );
-						var cushion2 = new THREE.Mesh( geometry, fabricMaterial );
+						var cushion1 = new THREE.Mesh( geometry, LeatherMaterial );
+						var cushion2 = new THREE.Mesh( geometry, shinyMaterial );
 
 						cushion1.scale.set(0.3, 0.3, 0.3);
 						cushion1.rotation.z = 110 * Math.PI/180;
@@ -506,19 +670,19 @@
 			
 			$("#greenMatCheck").change(function() {
 				if($(this).prop('checked')) {
-					uniformsShiny.diffuseMap.value = diffuseMapGreen;
+					uniformsLeather.diffuseMap.value = diffuseMapGreen;
 				}
 			});
 
 			$("#orangeMatCheck").change(function() {
 				if($(this).prop('checked')) {
-					uniformsShiny.diffuseMap.value = diffuseMapOrange;
+					uniformsLeather.diffuseMap.value = diffuseMapOrange;
 				}
 			});
 
 			$("#purpleMatCheck").change(function() {
 				if($(this).prop('checked')) {
-					uniformsShiny.diffuseMap.value = diffuseMapPurple;
+					uniformsLeather.diffuseMap.value = diffuseMapPurple;
 				}
 			});
 
@@ -535,17 +699,17 @@
 
 		function updateUniforms() {
 
-			uniformsShiny.clight.value = new THREE.Vector3(
+			uniformsLeather.clight.value = new THREE.Vector3(
 				lightParameters.red * lightParameters.intensity,
 				lightParameters.green * lightParameters.intensity,
 				lightParameters.blue * lightParameters.intensity);
-			uniformsShiny.normalScale.value = new THREE.Vector2( textureParameters.normalScale, textureParameters.normalScale );
-			uniformsShiny.ambientLight.value = new THREE.Vector3(
+			uniformsLeather.normalScale.value = new THREE.Vector2( textureParameters.normalScale, textureParameters.normalScale );
+			uniformsLeather.ambientLight.value = new THREE.Vector3(
 					ambientLightParameters.red * ambientLightParameters.intensity,
 					ambientLightParameters.green * ambientLightParameters.intensity,
 					ambientLightParameters.blue * ambientLightParameters.intensity);
-			uniformsShiny.roughnessMap.value = roughnessMap;
-			//uniformsShiny.diffuseMap.value = diffuseMap;
+			uniformsLeather.roughnessMap.value = roughnessMap;
+			//uniformsLeather.diffuseMap.value = diffuseMap;
 			/*uniformsFabric.cdiff.value = new THREE.Vector3(cdiff.red,cdiff.green,cdiff.blue);
 			uniformsFabric.clight.value = new THREE.Vector3(
 					lightParameters.red * lightParameters.intensity,
