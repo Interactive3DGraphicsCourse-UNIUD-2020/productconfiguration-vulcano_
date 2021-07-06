@@ -706,23 +706,48 @@
 		function guiUpdate(){
 			
 			// opzioni materiale fabric
-			$("#greenMatCheck").change(function() {
+
+			$("#greenFabricCheck").change(function() {
 				if($(this).prop('checked')) {
 					uniformsFabric.diffuseMap.value = diffuseMapGreen;
 				}
 			});
 
-			$("#pinkMatCheck").change(function() {
+			$("#pinkFabricCheck").change(function() {
 				if($(this).prop('checked')) {
 					uniformsFabric.diffuseMap.value = diffuseMapPink;
 				}
 			});
 
-			$("#blueMatCheck").change(function() {
+			$("#blueFabricCheck").change(function() {
 				if($(this).prop('checked')) {
 					uniformsFabric.diffuseMap.value = diffuseMapBlue;
 				}
 			});
+
+
+
+
+			// opzioni materiale shiny
+
+			$("#greenShinyCheck").change(function() {
+				if($(this).prop('checked')) {
+					uniformsShiny.cspec.value = new THREE.Vector3(0.5,0.5,0.15);
+				}
+			});
+
+			$("#violetShinyCheck").change(function() {
+				if($(this).prop('checked')) {
+					uniformsShiny.cspec.value = new THREE.Vector3(0.5,0.15,0.5);
+				}
+			});
+
+			$("#blueShinyCheck").change(function() {
+				if($(this).prop('checked')) {
+					uniformsShiny.cspec.value = new THREE.Vector3(0.15,0.5,0.5);
+				}
+			});
+
 
 		}
 
@@ -755,25 +780,25 @@
 				<input type="button" value="Pelle" onclick="">
 			</div>
 			<div id="fabricOptions" class="materialOptions">
-				<input type="radio" name="fabric_color" id="greenMatCheck" checked>
+				<input type="radio" name="fabric_color" id="greenFabricCheck" checked>
 				<label>verde</label>
 
-				<input type="radio" name="fabric_color" id="pinkMatCheck">
+				<input type="radio" name="fabric_color" id="pinkFabricCheck">
 				<label>rosa</label>
 
-				<input type="radio" name="fabric_color" id="blueMatCheck">
+				<input type="radio" name="fabric_color" id="blueFabricCheck">
 				<label>azzurro</label>
 			</div>
 
 			<div id="shinyOptions" class="materialOptions">
-				<input type="radio" name="shiny_color" id="greenMatCheck" checked>
-				<label>blu</label>
-
-				<input type="radio" name="shiny_color" id="orangeMatCheck">
-				<label>magenta</label>
-
-				<input type="radio" name="shiny_color" id="purpleMatCheck">
+				<input type="radio" name="shiny_color" id="greenShinyCheck">
 				<label>verde</label>
+
+				<input type="radio" name="shiny_color" id="violetShinyCheck">
+				<label>viola</label>
+
+				<input type="radio" name="shiny_color" id="blueShinyCheck" checked>
+				<label>petrolio</label>
 			</div>
 		
 		</div>
