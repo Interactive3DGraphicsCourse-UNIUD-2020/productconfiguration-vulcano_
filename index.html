@@ -28,24 +28,27 @@
 		}*/
 
 		
-		#cushionOptionsClassic {
-			width: 60%;
-			height: 2em;
-
+		#cushionOptions {
+			width: 19em;
 			position: absolute;
-    		bottom: 20%;
-    		left: 20%;
-    		z-index: 10000;
-
+			top: 0px;
+			right: 0%;
+			z-index: 10000;
 			text-align: center;
+			background: white;
+			padding: 2em;
 		}
 
-		#cushionOptionsClassic input{
+		.materialOptions{
+			padding-top: 2em;
+		}
+
+		.materialOptions input{
 			margin-top: -1px !important;
 			vertical-align: middle;
 		}	
 
-		#cushionOptionsClassic label{
+		.materialOptions label{
 			margin-left: -6px;	
 		}
 
@@ -712,16 +715,33 @@
 				
 			</p>
 		</div>
-		<div id="cushionOptionsClassic">
-		
-			<input type="radio" name="cushion_color" id="greenMatCheck" checked>
-			<label>green</label>
+		<div id="cushionOptions">
+			<div id="materialButtons">
+				<input type="button" value="Opaco" onclick="">
+				<input type="button" value="Riflettente" onclick="">
+				<input type="button" value="Pelle" onclick="">
+			</div>
+			<div id="fabricOptions" class="materialOptions">
+				<input type="radio" name="fabric_color" id="greenMatCheck" checked>
+				<label>verde</label>
 
-			<input type="radio" name="cushion_color" id="orangeMatCheck">
-			<label>orange</label>
+				<input type="radio" name="fabric_color" id="orangeMatCheck">
+				<label>arancione</label>
 
-			<input type="radio" name="cushion_color" id="purpleMatCheck">
-			<label>purple</label>
+				<input type="radio" name="fabric_color" id="purpleMatCheck">
+				<label>viola</label>
+			</div>
+
+			<div id="shinyOptions" class="materialOptions">
+				<input type="radio" name="shiny_color" id="greenMatCheck" checked>
+				<label>blu</label>
+
+				<input type="radio" name="shiny_color" id="orangeMatCheck">
+				<label>magenta</label>
+
+				<input type="radio" name="shiny_color" id="purpleMatCheck">
+				<label>verde</label>
+			</div>
 		
 		</div>
 	</body>
