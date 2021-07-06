@@ -633,6 +633,10 @@
 			controls = new THREE.OrbitControls(camera);
 			controls.addEventListener('change', Render);
 
+
+			// RESIZE 
+			window.addEventListener( 'resize', onResize, false );
+
 		}
 		
 
@@ -644,7 +648,16 @@
 		}
 
 
+
+
+
+		function onResize() {
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			camera.aspect = ( window.innerWidth / window.innerHeight );
+			camera.updateProjectionMatrix();
+		}
 		
+
 		function Update() {
 			requestAnimationFrame(Update);
 			stats.update();
