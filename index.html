@@ -441,12 +441,12 @@
 		// TEXTURE
 
 		// texture fabric material
-		var normalMap = loadTexture( "textures/green_fabric/green_normal.jpg" );
-		var diffuseMapGreen = loadTexture( "textures/green_fabric/green_baseColor.jpg" );
-		var diffuseMapOrange = loadTexture( "textures/cushion_diffuse_orange.jpg" );
-		var diffuseMapPurple = loadTexture( "textures/cushion_diffuse_purple.jpg" );
-		var aoMap = loadTexture( "textures/green_fabric/green_ao.jpg");
-		var roughnessMap = loadTexture( "textures/green_fabric/green_roughness.jpg");
+		var normalMap = loadTexture( "textures/fabric/fabric_normal.jpg" );
+		var diffuseMapGreen = loadTexture( "textures/fabric/green_baseColor.jpg" );
+		var diffuseMapPink = loadTexture( "textures/fabric/pink_baseColor.jpg" );
+		var diffuseMapBlue = loadTexture( "textures/fabric/blue_baseColor.jpg" );
+		var aoMap = loadTexture( "textures/fabric/fabric_ao.jpg");
+		var roughnessMap = loadTexture( "textures/fabric/fabric_roughness.jpg");
 
 		// texture shiny fabric material
 		var normalMapShiny = loadTexture( "textures/shiny_metal/shiny_fabric_normal.jpg" );
@@ -708,19 +708,19 @@
 			// opzioni materiale fabric
 			$("#greenMatCheck").change(function() {
 				if($(this).prop('checked')) {
-					uniformsLeather.diffuseMap.value = diffuseMapGreen;
+					uniformsFabric.diffuseMap.value = diffuseMapGreen;
 				}
 			});
 
-			$("#orangeMatCheck").change(function() {
+			$("#pinkMatCheck").change(function() {
 				if($(this).prop('checked')) {
-					uniformsLeather.diffuseMap.value = diffuseMapOrange;
+					uniformsFabric.diffuseMap.value = diffuseMapPink;
 				}
 			});
 
-			$("#purpleMatCheck").change(function() {
+			$("#blueMatCheck").change(function() {
 				if($(this).prop('checked')) {
-					uniformsLeather.diffuseMap.value = diffuseMapPurple;
+					uniformsFabric.diffuseMap.value = diffuseMapBlue;
 				}
 			});
 
@@ -758,11 +758,11 @@
 				<input type="radio" name="fabric_color" id="greenMatCheck" checked>
 				<label>verde</label>
 
-				<input type="radio" name="fabric_color" id="orangeMatCheck">
-				<label>arancione</label>
+				<input type="radio" name="fabric_color" id="pinkMatCheck">
+				<label>rosa</label>
 
-				<input type="radio" name="fabric_color" id="purpleMatCheck">
-				<label>viola</label>
+				<input type="radio" name="fabric_color" id="blueMatCheck">
+				<label>azzurro</label>
 			</div>
 
 			<div id="shinyOptions" class="materialOptions">
