@@ -37,9 +37,10 @@
 			text-align: center;
 			background: white;
 			padding: 2em;
+			border-radius: 0px 0px 10px 10px; 
 		}
 
-		#materialButtons input{
+		#materialButtons input, #buySection input{
 			background-color: white;
 			border: 1px solid #ccc;
 			color: #4CAF50;
@@ -53,16 +54,29 @@
 			cursor: pointer;
 		}
 
+		#buySection input{
+			background-color: #4CAF50;
+			color: white;
+			border-radius: 10px; 
+		}
+
+		#buySection input:hover{
+			background-color: white;
+			color: #4CAF50;
+		}
+
 		#materialButtons input:hover{
 			background-color: #4CAF50;
 			color: white;
 		}
 
-		#materialButtons input:active{
+		#materialButtons input:active, #buySection input:active{
 			background-color: #427a44;
 		}
 
 		#materialButtons input:first-of-type{
+			background-color: #4CAF50;
+			color: white;
 			border-radius: 10px 0px 0px 10px; 
 		}
 
@@ -84,6 +98,13 @@
 			margin-left: -6px;	
 		}
 
+		#fabricOptions{
+			display: block;
+		}
+
+		#shinyOptions{
+			display: none;
+		}
 
 		</style>
 		<script src="lib/three.min.js"></script>
@@ -434,6 +455,8 @@
 		var scene, camera, renderer, controls, stats;
 		var raycaster, mouse;
 
+		var cushion1, cushion2;
+
 
 
 
@@ -564,7 +587,7 @@
 			document.body.appendChild( renderer.domElement );
 			
 			// posizione camera
-			camera.position.set( 0, 70, 210 );
+			camera.position.set( 0, 90, 200 );
 			camera.lookAt( new THREE.Vector3( 0, 0, 0 ) );
 
 
@@ -601,18 +624,24 @@
 
 					function createNewGeometry(children){
 						var geometry = children.geometry;
-						var cushion1 = new THREE.Mesh( geometry, fabricMaterial );
-						var cushion2 = new THREE.Mesh( geometry, shinyMaterial );
+						cushion1 = new THREE.Mesh( geometry, fabricMaterial );
+						cushion2 = new THREE.Mesh( geometry, fabricMaterial );
+						cushion3 = new THREE.Mesh( geometry, fabricMaterial );
 
 						cushion1.scale.set(0.3, 0.3, 0.3);
 						cushion1.rotation.z = 110 * Math.PI/180;
 						cushion1.rotation.y = -50 * Math.PI/180;
-						cushion1.position.x = -80;
+						cushion1.position.x = -140;
 
 						cushion2.scale.set(0.3, 0.3, 0.3);
-						cushion2.rotation.z = -110 * Math.PI/180;
-						cushion2.rotation.y = 50 * Math.PI/180;
-						cushion2.position.x = 80;
+						cushion2.rotation.z = -105 * Math.PI/180;
+						cushion2.rotation.y = 90 * Math.PI/180;
+						cushion2.position.set(0, 0, -30);
+
+						cushion3.scale.set(0.3, 0.3, 0.3);
+						cushion3.rotation.z = -110 * Math.PI/180;
+						cushion3.rotation.y = 50 * Math.PI/180;
+						cushion3.position.x = 140;
 
 						/*cushion1.castShadow = true;
 						cushion2.castShadow = true;
@@ -621,6 +650,8 @@
 
 						scene.add( cushion1 );
 						scene.add( cushion2 );
+						scene.add( cushion3 );
+
 						//objects.push(mesh);}
 						loadingComplete = true;
 						console.log("OBJ");
@@ -704,6 +735,34 @@
 
 
 		function guiUpdate(){
+
+			// bottone "opaco"
+			$("#opacoButton").click(function() {
+				$("#fabricOptions").css("display", "block");
+				$("#shinyOptions").css("display", "none");
+
+				$("#opacoButton").css({"background-color":"#4CAF50","color":"white"});
+				$("#riflettenteButton").css({"background-color":"white","color":"#4CAF50"});
+
+				// cambio materiale a tutti i cuscini
+				cushion1.material = fabricMaterial;
+				cushion2.material = fabricMaterial;
+				cushion3.material = fabricMaterial;
+			});
+
+			$("#riflettenteButton").click(function() {
+				$("#shinyOptions").css("display", "block");
+				$("#fabricOptions").css("display", "none");
+
+				$("#riflettenteButton").css({"background-color":"#4CAF50","color":"white"});
+				$("#opacoButton").css({"background-color":"white","color":"#4CAF50"});
+
+				// cambio materiale a tutti i cuscini
+				cushion1.material = shinyMaterial;
+				cushion2.material = shinyMaterial;
+				cushion3.material = shinyMaterial;
+			});
+
 			
 			// opzioni materiale fabric
 
@@ -775,8 +834,8 @@
 		</div>
 		<div id="cushionOptions">
 			<div id="materialButtons">
-				<input type="button" value="Opaco" onclick="">
-				<input type="button" value="Riflettente" onclick="">
+				<input type="button" value="Opaco" id="opacoButton">
+				<input type="button" value="Riflettente" id="riflettenteButton">
 				<input type="button" value="Pelle" onclick="">
 			</div>
 			<div id="fabricOptions" class="materialOptions">
@@ -791,14 +850,18 @@
 			</div>
 
 			<div id="shinyOptions" class="materialOptions">
-				<input type="radio" name="shiny_color" id="greenShinyCheck">
+				<input type="radio" name="shiny_color" id="greenShinyCheck" checked>
 				<label>verde</label>
 
 				<input type="radio" name="shiny_color" id="violetShinyCheck">
 				<label>viola</label>
 
-				<input type="radio" name="shiny_color" id="blueShinyCheck" checked>
+				<input type="radio" name="shiny_color" id="blueShinyCheck">
 				<label>petrolio</label>
+			</div>
+			<div id="buySection">
+				<p>Prezzo:</p>
+				<input type="button" value="Acquista" id="buyButton">
 			</div>
 		
 		</div>
