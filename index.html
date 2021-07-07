@@ -29,18 +29,18 @@
 
 		
 		#cushionOptions {
-			width: 21em;
+			width: 40%;
 			position: absolute;
-			top: 0px;
-			right: 0%;
+			bottom: 0px;
+			right: 30%;
 			z-index: 10000;
 			text-align: center;
 			background: white;
-			padding: 2em;
-			border-radius: 0px 0px 10px 10px; 
+			padding: 0.5em;
+			border-radius: 10px 10px 0px 0px;
 		}
 
-		#materialButtons input, #buySection input{
+		#materialButtons input, .buySection input{
 			background-color: white;
 			border: 1px solid #ccc;
 			color: #4CAF50;
@@ -49,18 +49,35 @@
 			text-decoration: none;
 			display: inline-block;
 			font-size: 0.9em;
-			margin: 6px -0.1em;
-    		width: 6em;
+			margin: 15px -0.1em 0px -0.1em;
+			width: 28%;
 			cursor: pointer;
 		}
 
-		#buySection input{
-			background-color: #4CAF50;
-			color: white;
-			border-radius: 10px; 
+		.buySection{
+			margin-top: 2em;
+			padding-bottom: 0.5em;
 		}
 
-		#buySection input:hover{
+		.buySection input{
+			background-color: #4CAF50;
+			color: white;
+			border-radius: 2px; 
+			margin: 2px 0px 20px 0px;
+			display: inline;
+			margin-top: auto;
+			margin-bottom: auto;
+		}
+
+		.buySection p{
+			display: inline;
+			margin-top: auto;
+			margin-bottom: auto;
+			font-size: 1.5em;
+			margin-right: 20px;
+		}
+
+		.buySection input:hover{
 			background-color: white;
 			color: #4CAF50;
 		}
@@ -70,7 +87,7 @@
 			color: white;
 		}
 
-		#materialButtons input:active, #buySection input:active{
+		#materialButtons input:active, .buySection input:active{
 			background-color: #427a44;
 		}
 
@@ -85,7 +102,7 @@
 		}
 
 		.materialOptions{
-			padding-top: 2em;
+			padding-top: 0.5em;
 		}
 
 		.materialOptions input{
@@ -106,6 +123,8 @@
 			display: none;
 		}
 
+		
+
 		</style>
 		<script src="lib/three.min.js"></script>
 		<script src="lib/stats.min.js"></script>
@@ -116,11 +135,13 @@
         <script type="text/x-glsl" id="vertex-fabric">
 			varying vec3 vNormal;
 			varying vec3 vPosition;
+			varying vec3 wPosition;
 			varying vec2 uVv;
 	
 			void main() {
 				vec4 vPos = modelViewMatrix * vec4( position, 1.0 );
 				vPosition = vPos.xyz;
+				wPosition = (modelMatrix * vec4( position, 1.0 )).xyz;
 				vNormal = normalMatrix * normal;
 				uVv = uv;
 				gl_Position = projectionMatrix * vPos;
@@ -147,6 +168,9 @@
 
 			uniform sampler2D diffuseMap;
 			uniform sampler2D roughnessMap;
+
+			varying vec3 wPosition;
+			uniform samplerCube envMap;
 
 			vec3 cdiff;
 			float roughness;
@@ -190,12 +214,21 @@
 				return normalize( tsn * mapN );
 	
 			}
-	
+			
+			// http://en.wikibooks.org/wiki/GLSL_Programming/Applying_Matrix_Transformations
+			vec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {
+				return normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );
+			}
+
 			void main() {
 
 				vec3 n = perturbNormal2Arb( vPosition, normalize( vNormal ));
 				vec3 v = normalize( -vPosition);
 				float nDotv = max(dot( n, v ),0.000001);
+
+				vec3 worldN = inverseTransformDirection( n, viewMatrix );
+				vec3 worldV = cameraPosition - wPosition ;
+				vec3 r = normalize( reflect(-worldV,worldN));
 
 				cdiff = texture2D( diffuseMap, uVv*textureRepeat ).rgb;
 				// texture in sRGB, linearize
@@ -205,6 +238,10 @@
 				//vec3 fresnelTotale;
 
 				roughness = texture2D( roughnessMap, uVv*textureRepeat).r; // no need to linearize roughness map
+
+				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
+				// texture in sRGB, linearize
+				envLight = pow( envLight, vec3(2.2));
 
 				for(int i=0;i<2;i++){
 
@@ -228,13 +265,15 @@
 					//fresnelTotale += fresnel;
 				}
 
-				vec3 outRadiance = PI* BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;;
+				vec3 outRadiance =  envLight * PI * BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;
 				// gamma encode the final value
 				gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
+
+
 			}
 		</script>
 
-		<script type="text/x-glsl" id="vertex-fabric">
+		<!--<script type="text/x-glsl" id="vertex-fabric">
 			varying vec3 vNormal;
 			varying vec3 vPosition;
 			varying vec2 uVv;
@@ -265,6 +304,8 @@
 
 			uniform sampler2D diffuseMap;
 			vec3 cdiff;
+
+			//uniform samplerCube envMap;
 
 			
 			const float PI = 3.14159;
@@ -310,16 +351,18 @@
 				gl_FragColor = vec4(pow( diffRadiance, vec3(1.0/2.2)), 1.0);
 				//gl_FragColor = vec4(vNormal, 1.0);
 			}
-		</script>
+		</script>-->
 
 		<script type="text/x-glsl" id="vertex-shiny">
 			varying vec3 vNormal;
 			varying vec3 vPosition;
+			varying vec3 wPosition;
 			varying vec2 uVv;
 	
 			void main() {
 				vec4 vPos = modelViewMatrix * vec4( position, 1.0 );
 				vPosition = vPos.xyz;
+				wPosition = (modelMatrix * vec4( position, 1.0 )).xyz;
 				vNormal = normalMatrix * normal;
 				uVv = uv;
 				gl_Position = projectionMatrix * vPos;
@@ -348,6 +391,9 @@
 			//uniform sampler2D diffuseMap;
 			uniform sampler2D roughnessMap;
 			uniform vec2 textureRepeatRoughness; //aggiunta
+
+			varying vec3 wPosition;
+			uniform samplerCube envMap;
 
 			uniform vec3 cdiff;
 			float roughness;
@@ -398,6 +444,11 @@
 	
 			}
 	
+			// http://en.wikibooks.org/wiki/GLSL_Programming/Applying_Matrix_Transformations
+			vec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {
+				return normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );
+			}
+
 			void main() {
 
 				//vec2 st = vec2(vPosition.x, vPosition.y);
@@ -410,12 +461,20 @@
 				vec3 v = normalize( -vPosition);
 				float nDotv = max(dot( n, v ),0.000001);
 
+				vec3 worldN = inverseTransformDirection( n, viewMatrix );
+				vec3 worldV = cameraPosition - wPosition ;
+				vec3 r = normalize( reflect(-worldV,worldN));
+
 				//cdiff = texture2D( diffuseMap, uVv*textureRepeat ).rgb;
 				// texture in sRGB, linearize
 				//cdiff = pow( cdiff, vec3(2.2));
 
 				vec3 BRDFtotale;
 				//vec3 fresnelTotale;
+
+				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
+				// texture in sRGB, linearize
+				envLight = pow( envLight, vec3(2.2));
 
 				roughness = texture2D( roughnessMap, uVv*textureRepeatRoughness).r; // no need to linearize roughness map
 
@@ -441,7 +500,7 @@
 					//fresnelTotale += fresnel;
 				}
 
-				vec3 outRadiance = PI* BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;;
+				vec3 outRadiance = envLight * PI* BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;;
 				// gamma encode the final value
 				gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
 			}
@@ -476,6 +535,16 @@
 		var aoMapShiny = loadTexture( "textures/shiny_metal/shiny_fabric_ao.jpg");
 		var roughnessMapShiny = loadTexture( "textures/shiny_metal/shiny_fabric_roughness.jpg");
 
+		//cubemap
+		var loader = new THREE.CubeTextureLoader();
+		loader.setPath( 'textures/cubemap_sunset/' );
+
+		var textureCube = loader.load( [
+			'px.png', 'nx.png',
+			'py.png', 'ny.png',
+			'pz.png', 'nz.png'
+		] );
+
 
 
 		// LUCI
@@ -485,8 +554,7 @@
 		var lightParameters = {
 				red: 1.0,
 				green: 1.0,
-				blue: 1.0,
-				intensity: 1.0,
+				blue: 1.0
 		}
 
 		var ambientLightParameters = {
@@ -507,22 +575,24 @@
 				textureRepeat: { type: "v2", value: new THREE.Vector2(10,10)},
 				normalMap:	{ type: "t", value: normalMap},
 				normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
+				envMap:	{ type: "t", value: textureCube},
 				pointLightPosition:{type:"v3", value: [pointLight1Pos,pointLight2Pos]},
 				ambientLight: { type: "v3", value: new THREE.Vector3(
 					ambientLightParameters.red * ambientLightParameters.intensity,
 					ambientLightParameters.green * ambientLightParameters.intensity,
 					ambientLightParameters.blue * ambientLightParameters.intensity)},
 				clight:	{ type: "v3", value: new THREE.Vector3(
-					lightParameters.red * lightParameters.intensity,
-					lightParameters.green * lightParameters.intensity,
-					lightParameters.blue * lightParameters.intensity)}
+					lightParameters.red * 0.8,
+					lightParameters.green * 0.8,
+					lightParameters.blue * 0.8)}
 		};
 
 		var uniformsShiny = {
-				cspec:	{ type: "v3", value: new THREE.Vector3(0.15,0.5,0.5) }, //***
+				cspec:	{ type: "v3", value: new THREE.Vector3(0.5,0.5,0.15) }, //***
 				cdiff: {type: "v3", value: new THREE.Vector3(0.05,0.05,0.05)},  //***
 				roughnessMap:	{ type: "t", value: roughnessMapShiny},
 				aoMap:	{ type: "t", value: aoMapShiny},
+				envMap:	{ type: "t", value: textureCube},
 				textureRepeatRoughness: {type: "v2", value: new THREE.Vector2(4,4)}, //***
 				textureRepeat: { type: "v2", value: new THREE.Vector2(12,12)},
 				normalMap:	{ type: "t", value: normalMapShiny},
@@ -533,9 +603,9 @@
 					ambientLightParameters.green * ambientLightParameters.intensity,
 					ambientLightParameters.blue * ambientLightParameters.intensity)},
 				clight:	{ type: "v3", value: new THREE.Vector3(
-					lightParameters.red * lightParameters.intensity,
-					lightParameters.green * lightParameters.intensity,
-					lightParameters.blue * lightParameters.intensity)}
+					lightParameters.red * 1.0,
+					lightParameters.green * 1.0,
+					lightParameters.blue * 1.0)}
 		};
 
 		
@@ -587,13 +657,16 @@
 			document.body.appendChild( renderer.domElement );
 			
 			// posizione camera
-			camera.position.set( 0, 90, 200 );
-			camera.lookAt( new THREE.Vector3( 0, 0, 0 ) );
+			camera.position.set( 0, 70, 200 );
+			camera.lookAt( new THREE.Vector3( 0, 1, 0 ) );
 
 
-			// enable update dei materiali
+			// permetto update dei materiali
             fabricMaterial.needsUpdate = true;
 			shinyMaterial.needsUpdate = true;
+
+			// imposto cubemap
+			scene.background = textureCube;
 
 			
 
@@ -676,12 +749,12 @@
 
 			// PIANO
 
-			var planeGeometry = new THREE.CircleGeometry( 230, 150 );
-			var planeMaterial = new THREE.MeshBasicMaterial( { color: "#cccccc" } ); //NEL CASO CAMBIA MATERIALE
+			var planeGeometry = new THREE.CircleGeometry( 250, 150 );
+			var planeMaterial = new THREE.MeshBasicMaterial( { color: "#cccccc", opacity: 0.5 } ); //NEL CASO CAMBIA MATERIALE
+			planeMaterial.transparent = true;
 			var plane = new THREE.Mesh( planeGeometry, planeMaterial );
 			plane.rotation.x = - Math.PI/2;
 			plane.position.y = -60;
-			plane.position.z = -80;
 			//plane.castShadow = false;
 			//plane.receiveShadow = true;
 			scene.add( plane );
@@ -736,13 +809,13 @@
 
 		function guiUpdate(){
 
-			// bottone "opaco"
-			$("#opacoButton").click(function() {
+			// bottone "elegant"
+			$("#elegantButton").click(function() {
 				$("#fabricOptions").css("display", "block");
 				$("#shinyOptions").css("display", "none");
 
-				$("#opacoButton").css({"background-color":"#4CAF50","color":"white"});
-				$("#riflettenteButton").css({"background-color":"white","color":"#4CAF50"});
+				$("#elegantButton").css({"background-color":"#4CAF50","color":"white"});
+				$("#partyButton").css({"background-color":"white","color":"#4CAF50"});
 
 				// cambio materiale a tutti i cuscini
 				cushion1.material = fabricMaterial;
@@ -750,12 +823,12 @@
 				cushion3.material = fabricMaterial;
 			});
 
-			$("#riflettenteButton").click(function() {
+			$("#partyButton").click(function() {
 				$("#shinyOptions").css("display", "block");
 				$("#fabricOptions").css("display", "none");
 
-				$("#riflettenteButton").css({"background-color":"#4CAF50","color":"white"});
-				$("#opacoButton").css({"background-color":"white","color":"#4CAF50"});
+				$("#partyButton").css({"background-color":"#4CAF50","color":"white"});
+				$("#elegantButton").css({"background-color":"white","color":"#4CAF50"});
 
 				// cambio materiale a tutti i cuscini
 				cushion1.material = shinyMaterial;
@@ -834,11 +907,13 @@
 		</div>
 		<div id="cushionOptions">
 			<div id="materialButtons">
-				<input type="button" value="Opaco" id="opacoButton">
-				<input type="button" value="Riflettente" id="riflettenteButton">
+				<input type="button" value="Elegant" id="elegantButton">
+				<input type="button" value="Party" id="partyButton">
 				<input type="button" value="Pelle" onclick="">
 			</div>
 			<div id="fabricOptions" class="materialOptions">
+				<p>Elegante tessuto in simil seta.</p>
+
 				<input type="radio" name="fabric_color" id="greenFabricCheck" checked>
 				<label>verde</label>
 
@@ -847,9 +922,16 @@
 
 				<input type="radio" name="fabric_color" id="blueFabricCheck">
 				<label>azzurro</label>
+
+				<div class="buySection">
+					<p class="prezzo">80€</p>
+					<input type="button" value="Acquista" id="buyButton">
+				</div>
+				
 			</div>
 
 			<div id="shinyOptions" class="materialOptions">
+				<p>Tessuto sintetico dai riflessi ipnotici.</p>
 				<input type="radio" name="shiny_color" id="greenShinyCheck" checked>
 				<label>verde</label>
 
@@ -858,11 +940,13 @@
 
 				<input type="radio" name="shiny_color" id="blueShinyCheck">
 				<label>petrolio</label>
+
+				<div class="buySection">
+					<p class="prezzo">60€</p>
+					<input type="button" value="Acquista" id="buyButton">
+				</div>
 			</div>
-			<div id="buySection">
-				<p>Prezzo:</p>
-				<input type="button" value="Acquista" id="buyButton">
-			</div>
+			
 		
 		</div>
 	</body>
