@@ -13,6 +13,7 @@
 		canvas { 
 			width: 100vw; 
 			height: 100vh;
+			display: block;
 		}
 
 		.topnav {
@@ -25,9 +26,9 @@
 		}
 
 		.topnav img {
-			width: 30px;
-			height: 20px;
+			height: 29px;
 			margin: auto;
+			padding: 8px 0px 0px 14px !important;
 		}
 
 		.topnav a, .topnav img {
@@ -45,21 +46,19 @@
 		}
 
 		.topnav a.active {
-			background-color: #04AA6D;
+			background-color: #424242;
 			color: white;
 		}
 
-		/*#text{
+
+		#text{
 			width: 40%;
 			position: absolute;
 			left: 30%;
 			top: 10%;
 			text-align: center;
 		}
-		#text p{
-			color: #e3e3e3;
-			font-family: 'Antic', sans-serif;
-		}*/
+		
 
 
 		#cushionOptions {
@@ -693,7 +692,7 @@
 			document.body.appendChild( renderer.domElement );
 			
 			// posizione camera
-			camera.position.set( 0, 70, 200 );
+			camera.position.set( 0, 70, 240 );
 			camera.lookAt( new THREE.Vector3( 0, 1, 0 ) );
 
 
@@ -941,7 +940,7 @@
 		</script>
 
 		<div class="topnav">
-			<img src="img/lotus-flower.png" alt="logo">
+			<img src="img/acme_logo.png" alt="logo">
 			<a href="#lampade">Lampade</a>
 			<a href="#divani">Divani</a>
 			<a class="active" href="#accessori">Accessori</a>
@@ -951,9 +950,7 @@
 
 
 		<div id="text">
-			<p>
-				
-			</p>
+			<h1>Set 3 cuscini</h1>
 		</div>
 		<div id="optionsContainer">
 			<div id="cushionOptions">
