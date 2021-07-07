@@ -27,17 +27,17 @@
 			font-family: 'Antic', sans-serif;
 		}*/
 
-		
+
 		#cushionOptions {
-			width: 40%;
+			width: 18em;
 			position: absolute;
+			left: calc((100% - 24em)/2);
 			bottom: 0px;
-			right: 30%;
 			z-index: 10000;
 			text-align: center;
 			background: white;
-			padding: 0.5em;
-			border-radius: 10px 10px 0px 0px;
+			padding: 0.5em 3em;
+			border-radius: 5px 5px 0px 0px;
 		}
 
 		#materialButtons input, .buySection input{
@@ -50,7 +50,7 @@
 			display: inline-block;
 			font-size: 0.9em;
 			margin: 15px -0.1em 0px -0.1em;
-			width: 28%;
+			width: 5em;
 			cursor: pointer;
 		}
 
@@ -60,6 +60,7 @@
 		}
 
 		.buySection input{
+			width: 6em;
 			background-color: #4CAF50;
 			color: white;
 			border-radius: 2px; 
@@ -653,6 +654,8 @@
 			renderer.gammaInput = true;
 			renderer.gammaOutput = true;
 			//renderer.shadowMap.enabled = true;
+			//TONE MAPPING
+			renderer.toneMapping = THREE.LinearToneMapping;
 
 			document.body.appendChild( renderer.domElement );
 			
@@ -732,6 +735,9 @@
 					}
 				}
 			);
+
+
+			
 
 
 			//LIGHT
@@ -905,47 +911,51 @@
 				
 			</p>
 		</div>
-		<div id="cushionOptions">
-			<div id="materialButtons">
-				<input type="button" value="Elegant" id="elegantButton">
-				<input type="button" value="Party" id="partyButton">
-				<input type="button" value="Pelle" onclick="">
-			</div>
-			<div id="fabricOptions" class="materialOptions">
-				<p>Elegante tessuto in simil seta.</p>
-
-				<input type="radio" name="fabric_color" id="greenFabricCheck" checked>
-				<label>verde</label>
-
-				<input type="radio" name="fabric_color" id="pinkFabricCheck">
-				<label>rosa</label>
-
-				<input type="radio" name="fabric_color" id="blueFabricCheck">
-				<label>azzurro</label>
-
-				<div class="buySection">
-					<p class="prezzo">80€</p>
-					<input type="button" value="Acquista" id="buyButton">
+		<div id="optionsContainer">
+			<div id="cushionOptions">
+				<div id="materialButtons">
+					<input type="button" value="Elegant" id="elegantButton">
+					<input type="button" value="Party" id="partyButton">
+					<input type="button" value="Pelle" onclick="">
 				</div>
-				
-			</div>
+				<div id="fabricOptions" class="materialOptions">
+					<p>Elegante tessuto in simil seta.</p>
 
-			<div id="shinyOptions" class="materialOptions">
-				<p>Tessuto sintetico dai riflessi ipnotici.</p>
-				<input type="radio" name="shiny_color" id="greenShinyCheck" checked>
-				<label>verde</label>
+					<input type="radio" name="fabric_color" id="greenFabricCheck" checked>
+					<label>verde</label>
 
-				<input type="radio" name="shiny_color" id="violetShinyCheck">
-				<label>viola</label>
+					<input type="radio" name="fabric_color" id="pinkFabricCheck">
+					<label>rosa</label>
 
-				<input type="radio" name="shiny_color" id="blueShinyCheck">
-				<label>petrolio</label>
+					<input type="radio" name="fabric_color" id="blueFabricCheck">
+					<label>azzurro</label>
 
-				<div class="buySection">
-					<p class="prezzo">60€</p>
-					<input type="button" value="Acquista" id="buyButton">
+					<div class="buySection">
+						<p class="prezzo">80€</p>
+						<input type="button" value="Acquista" id="buyButton">
+					</div>
+					
+				</div>
+
+				<div id="shinyOptions" class="materialOptions">
+					<p>Tessuto sintetico dai riflessi ipnotici.</p>
+					<input type="radio" name="shiny_color" id="greenShinyCheck" checked>
+					<label>verde</label>
+
+					<input type="radio" name="shiny_color" id="violetShinyCheck">
+					<label>viola</label>
+
+					<input type="radio" name="shiny_color" id="blueShinyCheck">
+					<label>petrolio</label>
+
+					<div class="buySection">
+						<p class="prezzo">60€</p>
+						<input type="button" value="Acquista" id="buyButton">
+					</div>
 				</div>
 			</div>
+		</div>
+		
 			
 		
 		</div>
