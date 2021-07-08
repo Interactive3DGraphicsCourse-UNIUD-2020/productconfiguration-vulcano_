@@ -4,10 +4,11 @@
 		<style>
 		
 		body {
-			font-family: Monospace;
 			background-color: #f0f0f0;
 			margin: 0px;
 			overflow: hidden;
+			font-family: 'Montserrat', sans-serif;
+			font-size: 0.9em;
 		}
 		
 		canvas { 
@@ -28,7 +29,7 @@
 		.topnav img {
 			height: 29px;
 			margin: auto;
-			padding: 8px 0px 0px 14px !important;
+			padding: 8px 11px 0px 18px !important;
 		}
 
 		.topnav a, .topnav img {
@@ -37,7 +38,6 @@
 			text-align: center;
 			padding: 14px 16px;
 			text-decoration: none;
-			font-size: 17px;
 		}
 
 		.topnav a:hover {
@@ -48,6 +48,42 @@
 		.topnav a.active {
 			background-color: #424242;
 			color: white;
+		}
+
+
+		/*breadcrumbs*/
+
+		.breadcrumb {
+			position:absolute;
+			top: 50px;
+			list-style: none;
+			background-color: #eee;
+			z-index: 1000;
+			border-radius: 10px;
+			padding: 0.4em 0.7em;
+    		margin-left: 1em;
+		}
+
+		.breadcrumb li {
+			display: inline;
+			font-size: 0.85em;
+		}
+			
+		.breadcrumb li+li:before {
+			padding: 8px;
+			color: black;
+			content: ">";
+		}
+			
+		.breadcrumb li a {
+			color: rgb(126, 126, 126);
+			text-decoration: none;
+			cursor: pointer;
+		}
+			
+		.breadcrumb li a:hover {
+			color: black;
+			text-decoration: underline;
 		}
 
 
@@ -62,15 +98,31 @@
 
 
 		#cushionOptions {
-			width: 26em;
+			width: 22em;
 			position: absolute;
-			left: calc((100% - 28em)/2);
+			left: calc((100% - 22em)/2);
 			bottom: 0px;
 			z-index: 10000;
 			text-align: center;
 			background: white;
 			padding: 0.5em;
-			border-radius: 5px 5px 0px 0px;
+			border-radius: 10px 10px 0px 0px;
+		}
+
+		#cushionOptions p{
+			font-size: 0.9em;
+			margin-bottom: 1.3em;
+			font-style: italic;
+		}
+
+		#cushionOptions label{
+			font-size: 0.9em;
+			margin: 0px 3px 0px -3px;
+		}
+
+		#cushionOptions label{
+			font-size: 0.9em;
+			margin-left: 3px;
 		}
 
 		#materialButtons input, .buySection input{
@@ -81,43 +133,45 @@
 			text-align: center;
 			text-decoration: none;
 			display: inline-block;
-			font-size: 0.9em;
+			font-family: 'Montserrat', sans-serif;
+    		font-size: 0.9em;
 			margin: 15px -0.1em 0px -0.1em;
-			width: 5em;
+			width: 6em;
 			cursor: pointer;
 		}
 
 		.buySection{
-			margin-top: 2em;
-			padding-bottom: 0.5em;
+			margin-top: 1.2em;
+    		padding-bottom: 0.1em;
 		}
 
 		.buySection input{
 			width: 6em;
 			background-color: #424242;
 			color: white;
-			border-radius: 2px; 
 			margin: 2px 0px 20px 0px;
 			display: inline;
 			margin-top: auto;
 			margin-bottom: auto;
+			border-radius: 10px;
+    		padding-bottom: 6.5px;
 		}
 
 		.buySection p{
 			display: inline;
 			margin-top: auto;
 			margin-bottom: auto;
-			font-size: 1.5em;
+			/*font-size: 1.5em;*/
 			margin-right: 20px;
 		}
 
 		.buySection input:hover{
-			background-color: white;
-			color: #424242;
+			background-color: black;
+			color: white;
 		}
 
 		#materialButtons input:hover{
-			background-color: #424242;
+			background-color: black;
 			color: white;
 		}
 
@@ -157,9 +211,19 @@
 			display: none;
 		}
 
+		.prezzo{
+			font-weight: bold;
+		}
+
 		
 
 		</style>
+
+		<!--google font-->
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
+
 		<script src="lib/three.min.js"></script>
 		<script src="lib/stats.min.js"></script>
 		<script src="lib/OBJLoader.js"></script>
@@ -977,19 +1041,26 @@
 
 		</script>
 
+		<!--menu-->
 		<div class="topnav">
 			<img src="img/acme_logo.png" alt="logo">
-			<a href="#lampade">Lampade</a>
-			<a href="#divani">Divani</a>
-			<a class="active" href="#accessori">Accessori</a>
-			<a href="#about">Su di noi</a>
-			<a href="#contatti">Contattaci</a>
+			<a href="#">Lampade</a>
+			<a href="#">Divani</a>
+			<a class="active" href="#">Accessori</a>
+			<a href="#">Su di noi</a>
+			<a href="#">Contattaci</a>
 		</div>
 
+		<!--breadcrumbs-->
+		<ul class="breadcrumb">
+			<li><a href="#">Accessori</a></li>
+			<li><a href="#">Cuscini</a></li>
+			<li><a href="#">Trio cuscini Sunset</a></li>
+			<li>Personalizzazione</li>
+		  </ul>
 
-		<div id="text">
-			<h1>Set 3 cuscini</h1>
-		</div>
+		
+		<!--gui-->
 		<div id="optionsContainer">
 			<div id="cushionOptions">
 				<div id="materialButtons">
