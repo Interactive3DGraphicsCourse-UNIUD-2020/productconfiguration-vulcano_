@@ -546,7 +546,7 @@
 		
 		<script>
 		
-		var scene, camera, renderer, controls, stats;
+		var scene, camera, controls, renderer, stats;
 		var raycaster, mouse;
 
 		var cushion1, cushion2, cushion3;
@@ -571,14 +571,23 @@
 		var roughnessMapShiny = loadTexture( "textures/shiny_metal/shiny_fabric_roughness.jpg");
 
 		//cubemap
-		var loader = new THREE.CubeTextureLoader();
-		loader.setPath( 'textures/cubemap_sunset/' );
+		var loader1 = new THREE.CubeTextureLoader();
+		loader1.setPath( 'textures/cubemap_sunset/' );
 
-		var textureCube = loader.load( [
+		var textureCubeSunset = loader1.load( [
 			'px.png', 'nx.png',
 			'py.png', 'ny.png',
 			'pz.png', 'nz.png'
 		] );
+
+		/*var loader2 = new THREE.CubeTextureLoader();
+		loader2.setPath( 'textures/cubemap_venice/' );
+
+		var textureCubeVenice = loader2.load( [
+			'px.png', 'nx.png',
+			'py.png', 'ny.png',
+			'pz.png', 'nz.png'
+		] );*/
 
 
 
@@ -610,12 +619,12 @@
 				textureRepeat: { type: "v2", value: new THREE.Vector2(10,10)},
 				normalMap:	{ type: "t", value: normalMap},
 				normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
-				envMap:	{ type: "t", value: textureCube},
+				envMap:	{ type: "t", value: textureCubeSunset},
 				pointLightPosition:{type:"v3", value: [pointLight1Pos, pointLight2Pos, pointLight3Pos]},
 				ambientLight: { type: "v3", value: new THREE.Vector3(
-					ambientLightParameters.red * 0.8,
-					ambientLightParameters.green * 0.8,
-					ambientLightParameters.blue * 0.8)},
+					ambientLightParameters.red * 1.0,
+					ambientLightParameters.green * 1.0,
+					ambientLightParameters.blue * 1.0)},
 				clight:	{ type: "v3", value: new THREE.Vector3(
 					lightParameters.red * 1.0,
 					lightParameters.green * 1.0,
@@ -627,7 +636,7 @@
 				cdiff: {type: "v3", value: new THREE.Vector3(0.05,0.05,0.05)},  //***
 				roughnessMap:	{ type: "t", value: roughnessMapShiny},
 				aoMap:	{ type: "t", value: aoMapShiny},
-				envMap:	{ type: "t", value: textureCube},
+				envMap:	{ type: "t", value: textureCubeSunset},
 				textureRepeatRoughness: {type: "v2", value: new THREE.Vector2(4,4)}, //***
 				textureRepeat: { type: "v2", value: new THREE.Vector2(12,12)},
 				normalMap:	{ type: "t", value: normalMapShiny},
@@ -688,6 +697,8 @@
 			renderer.gammaInput = true;
 			renderer.gammaOutput = true;
 			//renderer.shadowMap.enabled = true;
+
+
 			//TONE MAPPING
 			renderer.toneMapping = THREE.LinearToneMapping;
 
@@ -703,7 +714,7 @@
 			shinyMaterial.needsUpdate = true;
 
 			// imposto cubemap
-			scene.background = textureCube;
+			scene.background = textureCubeSunset;
 
 			
 
@@ -827,12 +838,15 @@
 			stats = new Stats();
 			stats.domElement.style.position = 'absolute';
 			stats.domElement.style.top = '0px';
-			document.body.appendChild(stats.domElement);
+			//document.body.appendChild(stats.domElement);
 		
 			
 			// ORBIT CONTROLS
 
 			controls = new THREE.OrbitControls(camera);
+			controls.enablePan = false;
+			controls.minDistance = 200;
+			controls.maxDistance = 400;
 			controls.addEventListener('change', Render);
 
 
