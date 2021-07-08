@@ -186,7 +186,7 @@
 			varying vec3 vNormal;
 			varying vec3 vPosition;
 			varying vec2 uVv;
-			uniform vec3 pointLightPosition[2]; // in world space
+			uniform vec3 pointLightPosition[3]; // in world space
 
 			uniform vec3 ambientLight;
 
@@ -277,7 +277,7 @@
 				// texture in sRGB, linearize
 				envLight = pow( envLight, vec3(2.2));
 
-				for(int i=0;i<2;i++){
+				for(int i=0; i<3; i++){
 
 					vec4 lPosition = viewMatrix * vec4( pointLightPosition[i], 1.0 );
 					vec3 l = normalize(lPosition.xyz - vPosition.xyz);
@@ -299,6 +299,7 @@
 					//fresnelTotale += fresnel;
 				}
 
+				// 
 				vec3 outRadiance =  envLight * PI * BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;
 				// gamma encode the final value
 				gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
@@ -407,7 +408,7 @@
 			varying vec3 vNormal;
 			varying vec3 vPosition;
 			varying vec2 uVv;
-			uniform vec3 pointLightPosition[2]; // in world space
+			uniform vec3 pointLightPosition[3]; // in world space
 
 			uniform vec3 ambientLight;
 
@@ -512,7 +513,7 @@
 
 				roughness = texture2D( roughnessMap, uVv*textureRepeatRoughness).r; // no need to linearize roughness map
 
-				for(int i=0;i<2;i++){
+				for(int i=0; i<3; i++){
 
 					vec4 lPosition = viewMatrix * vec4( pointLightPosition[i], 1.0 );
 					vec3 l = normalize(lPosition.xyz - vPosition.xyz);
@@ -548,7 +549,7 @@
 		var scene, camera, renderer, controls, stats;
 		var raycaster, mouse;
 
-		var cushion1, cushion2;
+		var cushion1, cushion2, cushion3;
 
 
 
@@ -582,8 +583,9 @@
 
 
 		// LUCI
-		var pointLight1Pos = new THREE.Vector3(-60, 40, 40);
-		var pointLight2Pos = new THREE.Vector3(60, 40, -40);
+		var pointLight1Pos = new THREE.Vector3(0, 40, 200);
+		var pointLight2Pos = new THREE.Vector3(260, 30, -160);
+		var pointLight3Pos = new THREE.Vector3(-260, 30, -160);
 
 		var lightParameters = {
 				red: 1.0,
@@ -609,15 +611,15 @@
 				normalMap:	{ type: "t", value: normalMap},
 				normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
 				envMap:	{ type: "t", value: textureCube},
-				pointLightPosition:{type:"v3", value: [pointLight1Pos,pointLight2Pos]},
+				pointLightPosition:{type:"v3", value: [pointLight1Pos, pointLight2Pos, pointLight3Pos]},
 				ambientLight: { type: "v3", value: new THREE.Vector3(
-					ambientLightParameters.red * 1.0,
-					ambientLightParameters.green * 1.0,
-					ambientLightParameters.blue * 1.0)},
+					ambientLightParameters.red * 0.8,
+					ambientLightParameters.green * 0.8,
+					ambientLightParameters.blue * 0.8)},
 				clight:	{ type: "v3", value: new THREE.Vector3(
-					lightParameters.red * 0.8,
-					lightParameters.green * 0.8,
-					lightParameters.blue * 0.8)}
+					lightParameters.red * 1.0,
+					lightParameters.green * 1.0,
+					lightParameters.blue * 1.0)}
 		};
 
 		var uniformsShiny = {
@@ -630,7 +632,7 @@
 				textureRepeat: { type: "v2", value: new THREE.Vector2(12,12)},
 				normalMap:	{ type: "t", value: normalMapShiny},
 				normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
-				pointLightPosition:{type:"v3", value: [pointLight1Pos,pointLight2Pos]},
+				pointLightPosition:{type:"v3", value: [pointLight1Pos, pointLight2Pos, pointLight3Pos]},
 				ambientLight: { type: "v3", value: new THREE.Vector3(
 					ambientLightParameters.red * 1.0,
 					ambientLightParameters.green * 1.0,
@@ -705,6 +707,28 @@
 
 			
 
+			// SFERE LUCE
+			/*
+			var lightMesh = new THREE.Mesh( new THREE.SphereGeometry( 10, 16, 16),
+				new THREE.MeshBasicMaterial ({color: 0xffff00, wireframe:true}));
+			lightMesh.position.copy(pointLight1Pos);
+
+			var lightMesh2 = new THREE.Mesh( new THREE.SphereGeometry( 10, 16, 16),
+				new THREE.MeshBasicMaterial ({color: 0xffff00, wireframe:true}));
+			lightMesh2.position.copy(pointLight2Pos);
+
+			var lightMesh3 = new THREE.Mesh( new THREE.SphereGeometry( 10, 16, 16),
+				new THREE.MeshBasicMaterial ({color: 0xffff00, wireframe:true}));
+			lightMesh3.position.copy(pointLight3Pos);
+
+			scene.add(lightMesh);
+			scene.add(lightMesh2);
+			scene.add(lightMesh3);
+			*/
+		
+
+
+
 			// CARICAMENTO MODELLO
 			var loader = new THREE.OBJLoader();
 
@@ -744,7 +768,7 @@
 						cushion2.scale.set(0.3, 0.3, 0.3);
 						cushion2.rotation.z = -105 * Math.PI/180;
 						cushion2.rotation.y = 90 * Math.PI/180;
-						cushion2.position.set(0, 0, -30);
+						cushion2.position.set(0, 0, -40);
 
 						cushion3.scale.set(0.3, 0.3, 0.3);
 						cushion3.rotation.z = -110 * Math.PI/180;
