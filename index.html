@@ -111,7 +111,8 @@
 
 		#cushionOptions p{
 			font-size: 0.9em;
-			margin-bottom: 1.3em;
+			margin-bottom: 1.2em;
+			margin-top: 0.5em;
 			font-style: italic;
 		}
 
@@ -203,11 +204,11 @@
 			margin-left: -6px;	
 		}
 
-		#fabricOptions{
+		#cottonOptions{
 			display: block;
 		}
 
-		#shinyOptions{
+		#shinyOptions, #leatherOptions{
 			display: none;
 		}
 
@@ -224,8 +225,8 @@
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
 
+		<!--script import-->
 		<script src="libs/three.js"></script>
-		<script src="libs/stats.min.js"></script>
 		<script src="libs/OBJLoader.js"></script>
 		<script src="libs/OrbitControls.js"></script>
 		<script src="libs/BufferGeometryUtils.js"></script>
@@ -233,6 +234,7 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 	
+		<!--shaders-->
         <script type="text/x-glsl" id="vertex-allshaders">
 			attribute vec4 tangent;
 
@@ -601,13 +603,8 @@
 		
 		<script>
 		
-		var scene, camera, controls, renderer, stats;
-		var raycaster, mouse;
-
+		var scene, camera, controls, renderer;
 		var cushion1, cushion2, cushion3;
-
-
-
 
 
 		// TEXTURE
@@ -657,9 +654,9 @@
 		}
 
 		var ambientLightParameters = {
-			red: 0.4,
-			green: 0.4,
-			blue: 0.4
+			red: 0.5,
+			green: 0.5,
+			blue: 0.5
 		}
 
 
@@ -860,16 +857,8 @@
 			plane.rotation.x = - Math.PI/2;
 			plane.position.y = -60;
 			scene.add( plane );
-			
-
-			// STATS
-
-			stats = new Stats();
-			stats.domElement.style.position = 'absolute';
-			stats.domElement.style.top = '0px';
-			//document.body.appendChild(stats.domElement);
-		
-			
+	
+	
 			// ORBIT CONTROLS
 
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -896,7 +885,6 @@
 
 		function Update() {
 			requestAnimationFrame(Update);
-			stats.update();
 			guiUpdate()
 			Render();	
 		}
@@ -905,12 +893,13 @@
 
 		function guiUpdate(){
 
-			// bottone "elegant"
-			$("#elegantButton").click(function() {
-				$("#fabricOptions").css("display", "block");
+			// comportamento bottone "basic"
+			$("#basicButton").click(function() {
+				$("#cottonOptions").css("display", "block");
 				$("#shinyOptions").css("display", "none");
+				$("#leatherOptions").css("display", "none");
 
-				$("#elegantButton").css({"background-color":"#424242","color":"white"});
+				$("#basicButton").css({"background-color":"#424242","color":"white"});
 				$("#partyButton").css({"background-color":"white","color":"#424242"});
 				$("#leatherButton").css({"background-color":"white","color":"#424242"});
 
@@ -920,12 +909,14 @@
 				cushion3.material = fabricMaterial;
 			});
 
+			// comportamento bottone "party"
 			$("#partyButton").click(function() {
 				$("#shinyOptions").css("display", "block");
-				$("#fabricOptions").css("display", "none");
+				$("#cottonOptions").css("display", "none");
+				$("#leatherOptions").css("display", "none");
 
 				$("#partyButton").css({"background-color":"#424242","color":"white"});
-				$("#elegantButton").css({"background-color":"white","color":"#424242"});
+				$("#basicButton").css({"background-color":"white","color":"#424242"});
 				$("#leatherButton").css({"background-color":"white","color":"#424242"});
 
 				// cambio materiale a tutti i cuscini
@@ -934,13 +925,15 @@
 				cushion3.material = shinyMaterial;
 			});
 
+			// comportamento bottone "pelle"
 			$("#leatherButton").click(function() {
-				$("#shinyOptions").css("display", "block");
-				$("#fabricOptions").css("display", "none");
+				$("#leatherOptions").css("display", "block");
+				$("#shinyOptions").css("display", "none");
+				$("#cottonOptions").css("display", "none");
 
 				$("#leatherButton").css({"background-color":"#424242","color":"white"});
-				$("#elegantButton").css({"background-color":"white","color":"#424242"});
-				$("#shinyButton").css({"background-color":"white","color":"#424242"});
+				$("#basicButton").css({"background-color":"white","color":"#424242"});
+				$("#partyButton").css({"background-color":"white","color":"#424242"});
 
 				// cambio materiale a tutti i cuscini
 				cushion1.material = leatherMaterial;
@@ -949,21 +942,22 @@
 			});
 
 			
-			// opzioni materiale fabric
 
-			$("#greenFabricCheck").change(function() {
+			// opzioni materiale cotton
+
+			$("#greenCottonOption").change(function() {
 				if($(this).prop('checked')) {
 					uniformsCotton.diffuseMap.value = diffuseMapCottonGreen;
 				}
 			});
 
-			$("#pinkFabricCheck").change(function() {
+			$("#pinkCottonOption").change(function() {
 				if($(this).prop('checked')) {
 					uniformsCotton.diffuseMap.value = diffuseMapCottonPink;
 				}
 			});
 
-			$("#blueFabricCheck").change(function() {
+			$("#blueCottonOption").change(function() {
 				if($(this).prop('checked')) {
 					uniformsCotton.diffuseMap.value = diffuseMapCottonBlue;
 				}
@@ -971,24 +965,45 @@
 
 
 
-
 			// opzioni materiale shiny
 
-			$("#greenShinyCheck").change(function() {
+			$("#greenShinyOption").change(function() {
 				if($(this).prop('checked')) {
 					uniformsShiny.cspec.value = new THREE.Vector3(0.6,0.6,0.2);
 				}
 			});
 
-			$("#violetShinyCheck").change(function() {
+			$("#violetShinyOption").change(function() {
 				if($(this).prop('checked')) {
 					uniformsShiny.cspec.value = new THREE.Vector3(0.6,0.2,0.6);
 				}
 			});
 
-			$("#blueShinyCheck").change(function() {
+			$("#blueShinyOption").change(function() {
 				if($(this).prop('checked')) {
 					uniformsShiny.cspec.value = new THREE.Vector3(0.2,0.6,0.6);
+				}
+			});
+
+
+
+			// opzioni materiale leather
+
+			$("#redLeatherOption").change(function() {
+				if($(this).prop('checked')) {
+					uniformsLeather.diffuseMap.value = diffuseMapLeatherRed;
+				}
+			});
+
+			$("#brownLeatherOption").change(function() {
+				if($(this).prop('checked')) {
+					uniformsLeather.diffuseMap.value = diffuseMapLeatherBrown;
+				}
+			});
+
+			$("#blueLeatherOption").change(function() {
+				if($(this).prop('checked')) {
+					uniformsLeather.diffuseMap.value = diffuseMapLeatherBlue;
 				}
 			});
 
@@ -1024,54 +1039,69 @@
 			<li><a href="#">Trio cuscini Sunset</a></li>
 			<li>Personalizzazione</li>
 		</ul>
-
 		
 		<!--gui-->
 		<div id="optionsContainer">
 			<div id="cushionOptions">
 				<div id="materialButtons">
-					<input type="button" value="Elegant" id="elegantButton">
+					<input type="button" value="Basic" id="basicButton">
 					<input type="button" value="Party" id="partyButton">
 					<input type="button" value="Pelle" id="leatherButton">
 				</div>
-				<div id="fabricOptions" class="materialOptions">
+				<div id="cottonOptions" class="materialOptions">
 					<p>Tessuto in cotone di alta qualità.</p>
 
-					<input type="radio" name="fabric_color" id="greenFabricCheck" checked>
+					<input type="radio" name="cotton_color" id="greenCottonOption" checked>
 					<label>verde</label>
 
-					<input type="radio" name="fabric_color" id="pinkFabricCheck">
+					<input type="radio" name="cotton_color" id="pinkCottonOption">
 					<label>rosa</label>
 
-					<input type="radio" name="fabric_color" id="blueFabricCheck">
+					<input type="radio" name="cotton_color" id="blueCottonOption">
 					<label>azzurro</label>
 
 					<div class="buySection">
 						<p class="prezzo">80€</p>
-						<input type="button" value="Acquista" id="buyButton">
+						<input type="button" value="Acquista">
 					</div>
 					
 				</div>
 
 				<div id="shinyOptions" class="materialOptions">
 					<p>Tessuto metallizzato trapuntato.</p>
-					<input type="radio" name="shiny_color" id="greenShinyCheck" checked>
+					<input type="radio" name="shiny_color" id="greenShinyOption" checked>
 					<label>verde</label>
 
-					<input type="radio" name="shiny_color" id="violetShinyCheck">
+					<input type="radio" name="shiny_color" id="violetShinyOption">
 					<label>viola</label>
 
-					<input type="radio" name="shiny_color" id="blueShinyCheck">
-					<label>petrolio</label>
+					<input type="radio" name="shiny_color" id="blueShinyOption">
+					<label>blu</label>
 
 					<div class="buySection">
-						<p class="prezzo">60€</p>
-						<input type="button" value="Acquista" id="buyButton">
+						<p class="prezzo">100€</p>
+						<input type="button" value="Acquista">
+					</div>
+				</div>
+
+				<div id="leatherOptions" class="materialOptions">
+					<p>Vera pelle con trattamento idrorepellente.</p>
+					<input type="radio" name="leather_color" id="redLeatherOption" checked>
+					<label>rosso</label>
+
+					<input type="radio" name="leather_color" id="brownLeatherOption">
+					<label>marrone</label>
+
+					<input type="radio" name="leather_color" id="blueLeatherOption">
+					<label>blu</label>
+
+					<div class="buySection">
+						<p class="prezzo">300€</p>
+						<input type="button" value="Acquista">
 					</div>
 				</div>
 			</div>
 		</div>
-		
 			
 	</body>
 </html>
