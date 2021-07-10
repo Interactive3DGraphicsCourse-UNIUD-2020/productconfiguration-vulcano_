@@ -233,7 +233,7 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 	
-        <script type="text/x-glsl" id="vertex-fabric">
+        <script type="text/x-glsl" id="vertex-allshaders">
 			attribute vec4 tangent;
 
 			varying vec3 vNormal;
@@ -381,42 +381,6 @@
 			}
 		</script>
 
-		
-		<script type="text/x-glsl" id="vertex-shiny">
-			attribute vec4 tangent;
-
-			varying vec3 vNormal;
-			varying vec3 vPosition;
-			varying vec3 wPosition;
-			varying vec2 uVv;
-
-			varying vec3 vTangent;
-    		varying vec3 vBitangent;
-	
-			void main() {
-				vec4 vPos = modelViewMatrix * vec4( position, 1.0 );
-				vPosition = vPos.xyz;
-
-				uVv = uv;
-
-				// posizione vertice in world space
-				wPosition = (modelMatrix * vec4( position, 1.0 )).xyz;
-
-				// porto normale in view space
-				vNormal = normalMatrix * normal;
-
-				// trovo tangente normalizzata in eye space
-				vec3 objectTangent = vec3( tangent.xyz );
-				vec3 transformedTangent = normalMatrix * objectTangent;
-				vTangent = normalize( transformedTangent );
-
-				// trovo bitangente
-				vBitangent = normalize( cross( vNormal, vTangent ) * tangent.w );
-
-				gl_Position = projectionMatrix * vPos;
-			}
-		</script>
-	
 		<script type="text/x-glsl" id="fragment-shiny">
 			varying vec3 vNormal;
 			varying vec3 vPosition;
@@ -644,11 +608,11 @@
 
 		// MATERIALI
 
-		vsFabric = document.getElementById("vertex-fabric").textContent;
+		vsFabric = document.getElementById("vertex-allshaders").textContent;
 		fsFabric = document.getElementById("fragment-fabric").textContent;
 		//vsLeather = document.getElementById("vertex-leather").textContent;
 		//fsLeather = document.getElementById("fragment-leather").textContent;
-		vsShiny = document.getElementById("vertex-shiny").textContent;
+		vsShiny = document.getElementById("vertex-allshaders").textContent;
 		fsShiny = document.getElementById("fragment-shiny").textContent;
 
 		fabricMaterial = new THREE.ShaderMaterial({ uniforms: uniformsFabric, vertexShader: vsFabric, fragmentShader: fsFabric });
