@@ -1,230 +1,9 @@
 <html>
 	<head>
 		<title>2nd Project - Vulcano</title>
-		<style>
-		
-		/* generali */
 
-		body {
-			background-color: #f0f0f0;
-			margin: 0px;
-			overflow: hidden;
-			font-family: 'Montserrat', sans-serif;
-			font-size: 0.9em;
-		}
-
-		#text{
-			width: 40%;
-			position: absolute;
-			left: 30%;
-			top: 10%;
-			text-align: center;
-		}
-		
-
-		/* canvas */
-
-		canvas { 
-			width: 100vw; 
-			height: 100vh;
-			display: block;
-		}
-
-
-		/* menu */
-
-		.topnav {
-			overflow: hidden;
-			background-color: white;
-			z-index: 1000;
-			position:absolute;
-			top: 0px;
-			width: 100%;
-		}
-
-		.topnav img {
-			height: 29px;
-			margin: auto;
-			padding: 8px 11px 0px 18px !important;
-		}
-
-		.topnav a, .topnav img {
-			float: left;
-			color: #424242;
-			text-align: center;
-			padding: 14px 16px;
-			text-decoration: none;
-			font-size: 0.95em;
-		}
-
-		.topnav a:hover {
-			background-color: black;
-			color: #ddd;
-		}
-
-		.topnav a.active {
-			background-color: #424242;
-			color: white;
-		}
-
-
-		/*breadcrumbs*/
-
-		.breadcrumb {
-			position:absolute;
-			top: 50px;
-			list-style: none;
-			background-color: #eee;
-			z-index: 1000;
-			border-radius: 10px;
-			padding: 0.4em 0.7em;
-    		margin-left: 1em;
-		}
-
-		.breadcrumb li {
-			display: inline;
-			font-size: 0.85em;
-		}
-			
-		.breadcrumb li+li:before {
-			padding: 8px;
-			color: black;
-			content: ">";
-		}
-			
-		.breadcrumb li a {
-			color: rgb(126, 126, 126);
-			text-decoration: none;
-			cursor: pointer;
-		}
-			
-		.breadcrumb li a:hover {
-			color: black;
-			text-decoration: underline;
-		}
-
-		
-		/* gui */
-
-		#cushionOptions {
-			width: 22em;
-			position: absolute;
-			left: calc((100% - 22em)/2);
-			bottom: 0px;
-			z-index: 10000;
-			text-align: center;
-			background: white;
-			padding: 0.5em;
-			border-radius: 10px 10px 0px 0px;
-		}
-
-		#cushionOptions p{
-			font-size: 0.9em;
-			margin-bottom: 1.2em;
-			margin-top: 0.5em;
-			font-style: italic;
-		}
-
-		#cushionOptions label{
-			font-size: 0.9em;
-			margin: 0px 3px 0px -3px;
-		}
-
-		#cushionOptions label{
-			font-size: 0.9em;
-			margin-left: 3px;
-		}
-
-		#materialButtons input, .buySection input{
-			background-color: white;
-			border: 1px solid #ccc;
-			color: #424242;
-			padding: 0.4em 0.8em;
-			text-align: center;
-			text-decoration: none;
-			display: inline-block;
-			font-family: 'Montserrat', sans-serif;
-    		font-size: 0.9em;
-			margin: 15px -0.1em 0px -0.1em;
-			width: 6em;
-			cursor: pointer;
-		}
-
-		.buySection{
-			margin-top: 1.2em;
-    		padding-bottom: 0.1em;
-		}
-
-		.buySection input{
-			width: 6em;
-			background-color: #424242;
-			color: white;
-			margin: 2px 0px 20px 0px;
-			display: inline;
-			margin-top: auto;
-			margin-bottom: auto;
-			border-radius: 10px;
-    		padding-bottom: 6.5px;
-		}
-
-		.buySection p{
-			display: inline;
-			margin-top: auto;
-			margin-bottom: auto;
-			margin-right: 20px;
-		}
-
-		.buySection input:hover{
-			background-color: black;
-			color: white;
-		}
-
-		#materialButtons input:hover{
-			background-color: black;
-			color: white;
-		}
-
-		#materialButtons input:active, .buySection input:active{
-			background-color: #000000;
-		}
-
-		#materialButtons input:first-of-type{
-			background-color: #424242;
-			color: white;
-			border-radius: 10px 0px 0px 10px; 
-		}
-
-		#materialButtons input:last-of-type{
-			border-radius: 0px 10px 10px 0px; 
-		}
-
-		.materialOptions{
-			padding-top: 0.5em;
-		}
-
-		.materialOptions input{
-			margin-top: -1px !important;
-			vertical-align: middle;
-			cursor: pointer;
-		}	
-
-		.materialOptions label{
-			margin-left: -6px;	
-		}
-
-		#cottonOptions{
-			display: block;
-		}
-
-		#shinyOptions, #leatherOptions{
-			display: none;
-		}
-
-		.prezzo{
-			font-weight: bold;
-		}
-
-		</style>
+		<!--css import-->
+		<link rel="stylesheet" href="css/style.css">
 
 		<!--google font-->
 		<link rel="preconnect" href="https://fonts.googleapis.com">
@@ -613,9 +392,9 @@
 		var cushion1, cushion2, cushion3;
 
 
-		// TEXTURE
+		// TEXTURES
 
-		// texture cotton material
+		// textures cotton material
 		var normalMapCotton = loadTexture( "textures/cotton/cotton_normal.jpg" );
 		var diffuseMapCottonGreen = loadTexture( "textures/cotton/cotton_diffuse_green.jpg" );
 		var diffuseMapCottonPink = loadTexture( "textures/cotton/cotton_diffuse_pink.jpg" );
@@ -623,12 +402,12 @@
 		var aoMapCotton = loadTexture( "textures/cotton/cotton_ao.jpg");
 		var roughnessMapCotton = loadTexture( "textures/cotton/cotton_roughness.jpg");
 
-		// texture shiny fabric material
+		// textures shiny fabric material
 		var normalMapShiny = loadTexture( "textures/shiny_fabric/shiny_fabric_normal.jpg" );
 		var aoMapShiny = loadTexture( "textures/shiny_fabric/shiny_fabric_ao.jpg");
 		var roughnessMapShiny = loadTexture( "textures/shiny_fabric/shiny_fabric_roughness.jpg");
 
-		// texture leather material
+		// textures leather material
 		var normalMapLeather = loadTexture( "textures/leather/leather_normal.jpg" );
 		var diffuseMapLeatherRed = loadTexture( "textures/leather/leather_diffuse_red.jpg" );
 		var diffuseMapLeatherBlue = loadTexture( "textures/leather/leather_diffuse_blue.jpg" );
@@ -646,6 +425,7 @@
 			'py.png', 'ny.png',
 			'pz.png', 'nz.png'
 		] );
+
 
 
 		// LUCI
@@ -729,6 +509,7 @@
 		};
 		
 
+
 		// MATERIALI
 
 		vsFabric = document.getElementById("vertex-allshaders").textContent;
@@ -743,7 +524,6 @@
 		fabricMaterial = new THREE.ShaderMaterial({ uniforms: uniformsCotton, vertexShader: vsFabric, fragmentShader: fsFabric });
 		shinyMaterial = new THREE.ShaderMaterial({ uniforms: uniformsShiny, vertexShader: vsShiny, fragmentShader: fsShiny });
 		leatherMaterial = new THREE.ShaderMaterial({ uniforms: uniformsLeather, vertexShader: vsLeather, fragmentShader: fsLeather });
-
 
 		// permetto update dei materiali
 		fabricMaterial.needsUpdate = true;
@@ -812,6 +592,7 @@
 			scene.add(lightMesh3);
 			*/
 		
+			
 
 			// CARICAMENTO MODELLO
 			var loader = new THREE.OBJLoader();
@@ -869,7 +650,7 @@
 
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
 			controls.enablePan = false;
-			controls.minDistance = 100;
+			controls.minDistance = 200;
 			controls.maxDistance = 400;
 			controls.addEventListener('change', Render);
 
@@ -1051,8 +832,8 @@
 			<div id="cushionOptions">
 				<div id="materialButtons">
 					<input type="button" value="Basic" id="basicButton">
-					<input type="button" value="Party" id="partyButton">
-					<input type="button" value="Pelle" id="leatherButton">
+					<input type="button" value="Crazy" id="partyButton">
+					<input type="button" value="Elegant" id="leatherButton">
 				</div>
 				<div id="cottonOptions" class="materialOptions">
 					<p>Tessuto in cotone di alta qualità.</p>
