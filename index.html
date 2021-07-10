@@ -279,7 +279,7 @@
 			uniform vec3 pointLightPosition[3]; // in world space
 			uniform vec3 ambientLight;
 			uniform vec3 clight;
-			uniform vec3 cspec;
+			//uniform vec3 cspec;
 			
 			// uniform texture
 			uniform sampler2D aoMap;
@@ -289,6 +289,8 @@
 			uniform samplerCube envMap;
 			uniform vec2 textureRepeat;
 			uniform vec2 normalScale;
+			//uniform vec3 cdiff;
+			//uniform float roughness;
 
 			vec3 cdiff;
 			float roughness;
@@ -339,17 +341,15 @@
 				vec3 worldN = inverseTransformDirection( n, viewMatrix );
 				vec3 worldV = cameraPosition - wPosition ;
 				vec3 r = normalize( reflect(-worldV,worldN));
+				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
+				envLight = pow( envLight, vec3(2.2)); // linearizzo la texture
 
 				cdiff = texture2D( diffuseMap, uVv*textureRepeat ).rgb;
 				cdiff = pow( cdiff, vec3(2.2)); // linearizzo la texture
 
 				roughness = texture2D( roughnessMap, uVv*textureRepeat).r; // non serve linearizzare la roughness map
 
-				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
-				envLight = pow( envLight, vec3(2.2)); // linearizzo la texture
-
 				vec3 BRDFtotale;
-				//vec3 fresnelTotale;
 
 				for(int i=0; i<3; i++){
 
@@ -362,18 +362,15 @@
 					float nDoth = max(dot( n, h ),0.000001);
 					float vDoth = max(dot( v, h ),0.000001);
 
-					vec3 fresnel = FSchlick(vDoth, cspec);
+					//vec3 fresnel = FSchlick(vDoth, cspec);
 					float alpha = roughness * roughness;
 
-					vec3 BRDF = (vec3(1.0)-fresnel)*cdiff/PI + fresnel*GSmith(nDotv,nDotl, alpha)*DGGX(nDoth,alpha)/
-						(4.0*nDotl*nDotv);
+					vec3 BRDF = cdiff/PI;
 
-					BRDFtotale += BRDF*clight*nDotl;
-					//fresnelTotale += fresnel;
+					BRDFtotale += PI * BRDF * clight * nDotl;
 				}
 
-				
-				vec3 outRadiance =  envLight * PI * BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;
+				vec3 outRadiance =  envLight * BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;
 				
 				// gamma encoding
 				gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
@@ -452,14 +449,12 @@
 				vec3 worldN = inverseTransformDirection( n, viewMatrix );
 				vec3 worldV = cameraPosition - wPosition ;
 				vec3 r = normalize( reflect(-worldV,worldN));
-
-				roughness = texture2D( roughnessMap, uVv*textureRepeatRoughness ).r; // non serve linearizzare la roughness map
-
 				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
 				envLight = pow( envLight, vec3(2.2)); // linearizzo la texture
 
+				roughness = texture2D( roughnessMap, uVv*textureRepeatRoughness ).r; // non serve linearizzare la roughness map
+
 				vec3 BRDFtotale;
-				//vec3 fresnelTotale;
 
 				for(int i=0; i<3; i++){
 
@@ -478,12 +473,10 @@
 					vec3 BRDF = fresnel*GSmith(nDotv,nDotl, alpha)*DGGX(nDoth,alpha)/
 						(4.0*nDotl*nDotv);
 
-					BRDFtotale += BRDF*clight*nDotl;
-					//fresnelTotale += fresnel;
+					BRDFtotale += PI * BRDF * clight * nDotl;
 				}
 
-				
-				vec3 outRadiance =  envLight * PI * BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;
+				vec3 outRadiance =  envLight * BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;
 				
 				// gamma encoding
 				gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
@@ -531,16 +524,6 @@
 			'pz.png', 'nz.png'
 		] );
 
-		/*var loader2 = new THREE.CubeTextureLoader();
-		loader2.setPath( 'textures/cubemap_venice/' );
-
-		var textureCubeVenice = loader2.load( [
-			'px.png', 'nx.png',
-			'py.png', 'ny.png',
-			'pz.png', 'nz.png'
-		] );*/
-
-
 
 		// LUCI
 		var pointLight1Pos = new THREE.Vector3(0, 40, 200);
@@ -564,23 +547,25 @@
 		// UNIFORMS SHADERS
 		
 		var uniformsFabric = {
-				cspec:	{ type: "v3", value: new THREE.Vector3(0.04,0.04,0.04) },
+				//cspec:	{ type: "v3", value: new THREE.Vector3(0.04,0.04,0.04) },
+				//cdiff: {type: "v3", value: new THREE.Vector3(1.00,0.05,0.05)},
 				diffuseMap:	{ type: "t", value: diffuseMapGreen},
+				//roughness: {type: "f", value: 1.0},
 				roughnessMap:	{ type: "t", value: roughnessMap},
 				aoMap:	{ type: "t", value: aoMap },
 				envMap:	{ type: "t", value: textureCubeSunset},
-				textureRepeat: { type: "v2", value: new THREE.Vector2(10,10)},
+				textureRepeat: { type: "v2", value: new THREE.Vector2(5,5)},
 				normalMap:	{ type: "t", value: normalMap},
 				normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
 				pointLightPosition:{type:"v3", value: [pointLight1Pos, pointLight2Pos, pointLight3Pos]},
 				ambientLight: { type: "v3", value: new THREE.Vector3(
-					ambientLightParameters.red * 1.0,
-					ambientLightParameters.green * 1.0,
-					ambientLightParameters.blue * 1.0)},
+					ambientLightParameters.red * 0.8,
+					ambientLightParameters.green * 0.8,
+					ambientLightParameters.blue * 0.8)},
 				clight:	{ type: "v3", value: new THREE.Vector3(
-					lightParameters.red * 1.0,
-					lightParameters.green * 1.0,
-					lightParameters.blue * 1.0)}
+					lightParameters.red * 0.9,
+					lightParameters.green * 0.9,
+					lightParameters.blue * 0.9)}
 		};
 
 		var uniformsShiny = {
@@ -619,7 +604,7 @@
 		shinyMaterial = new THREE.ShaderMaterial({ uniforms: uniformsShiny, vertexShader: vsShiny, fragmentShader: fsShiny });
 		//leatherMaterial = new THREE.ShaderMaterial({ uniforms: uniformsLeather, vertexShader: vsLeather, fragmentShader: fsLeather });
 
-		fabricMaterial.vertexTangents = true;
+		//fabricMaterial.vertexTangents = true;
 
 		// permetto update dei materiali
 		fabricMaterial.needsUpdate = true;
@@ -661,8 +646,8 @@
 			document.body.appendChild( renderer.domElement );
 			
 			// posizione camera
-			camera.position.set( 0, 70, 240 );
-			camera.lookAt( new THREE.Vector3( 0, 1, 0 ) );
+			camera.position.set( 0, 70, 230 );
+			camera.lookAt( new THREE.Vector3( 0, 0, 0 ) );
 
 
 
@@ -802,7 +787,7 @@
 
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
 			controls.enablePan = false;
-			controls.minDistance = 200;
+			controls.minDistance = 100;
 			controls.maxDistance = 400;
 			controls.addEventListener('change', Render);
 
