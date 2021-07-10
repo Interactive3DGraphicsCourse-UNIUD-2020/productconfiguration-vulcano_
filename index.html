@@ -482,6 +482,119 @@
 			}
 		</script>
 
+		<script type="text/x-glsl" id="fragment-leather">
+			varying vec3 vNormal;
+			varying vec3 vPosition;
+			varying vec3 wPosition;
+			varying vec2 uVv;
+			varying vec3 vTangent;
+    		varying vec3 vBitangent;
+
+			uniform vec3 pointLightPosition[3]; // in world space
+			uniform vec3 ambientLight;
+			uniform vec3 clight;
+			
+			// uniform texture
+			uniform sampler2D aoMap;
+			uniform sampler2D normalMap;
+			uniform sampler2D diffuseMap;
+			uniform sampler2D specularMap;
+			uniform sampler2D roughnessMap;
+			uniform samplerCube envMap;
+			uniform vec2 textureRepeat;
+			uniform vec2 normalScale;
+
+			vec3 cdiff;
+			vec3 cspec;
+			float roughness;
+			const float PI = 3.14159;
+
+			// funzioni per il calcolo della BRDF
+			vec3 FSchlick(float vDoth, vec3 f0) {
+				return f0 + (vec3(1.0)-f0)*pow(1.0 - vDoth,5.0);
+			}
+			float DGGX(float NoH, float alpha) {
+				float alpha2 = alpha * alpha;
+				float k = NoH*NoH * (alpha2 - 1.0) + 1.0;
+    			return alpha2 / (PI * k * k );
+			}
+			float G1(float nDotv, float alpha) {
+				float alpha2 = alpha*alpha;
+				return 2.0 * (nDotv / (nDotv + sqrt(alpha2 + (1.0-alpha2)*nDotv*nDotv )));
+			}
+			float GSmith(float nDotv, float nDotl, float alpha) {
+				return G1(nDotl,alpha)*G1(nDotv,alpha);
+			}
+
+			// funzione per ...
+			// http://en.wikibooks.org/wiki/GLSL_Programming/Applying_Matrix_Transformations
+			vec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {
+				return normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );
+			}
+
+			void main() {
+				// rinormalizzo perché interpolazione distrugge la normalizzazione
+				vec3 normal = normalize( vNormal );
+				vec3 tangent = normalize( vTangent );
+				vec3 bitangent = normalize( vBitangent );
+
+				// matrice per passare da tangent space a view space
+				mat3 vTBN = mat3( tangent, bitangent, normal );
+				
+				// leggo normale da texture e la porto in spazio tangente
+				vec3 mapN = texture2D( normalMap, uVv*textureRepeat ).xyz * 2.0 - 1.0;
+				mapN.xy = normalScale * mapN.xy;
+
+				// porto normale in eye space
+        		vec3 n = normalize( vTBN * mapN );
+
+				vec3 v = normalize( -vPosition);
+				float nDotv = max(dot( n, v ),0.000001);
+
+				vec3 worldN = inverseTransformDirection( n, viewMatrix );
+				vec3 worldV = cameraPosition - wPosition ;
+				vec3 r = normalize( reflect(-worldV,worldN));
+				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
+				envLight = pow( envLight, vec3(2.2)); // linearizzo la texture
+
+				cdiff = texture2D( diffuseMap, uVv*textureRepeat ).rgb;
+				cdiff = pow( cdiff, vec3(2.2)); // linearizzo la texture
+
+				cspec = texture2D( specularMap, uVv*textureRepeat ).rgb;
+				cspec = pow( cspec, vec3(2.2)); // linearizzo la texture
+
+				roughness = texture2D( roughnessMap, uVv*textureRepeat).r; // non serve linearizzare la roughness map
+
+				vec3 BRDFtotale;
+
+				for(int i=0; i<3; i++){
+
+					vec4 lPosition = viewMatrix * vec4( pointLightPosition[i], 1.0 );
+					vec3 l = normalize(lPosition.xyz - vPosition.xyz);
+					vec3 h = normalize( v + l);
+
+					float nDotl = max(dot( n, l ),0.000001); // il prodotto non deve mai essere zero
+					float lDoth = max(dot( l, h ),0.000001);
+					float nDoth = max(dot( n, h ),0.000001);
+					float vDoth = max(dot( v, h ),0.000001);
+
+					vec3 fresnel = FSchlick(vDoth, cspec);
+					float alpha = roughness * roughness;
+
+					vec3 BRDF = (vec3(1.0)-fresnel)*cdiff/PI + fresnel*GSmith(nDotv,nDotl, alpha)*DGGX(nDoth,alpha)/
+					(4.0*nDotl*nDotv);
+
+					BRDFtotale += PI * BRDF * clight * nDotl;
+				}
+
+				vec3 outRadiance =  envLight * BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;
+				
+				// gamma encoding
+				gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
+				
+			}
+		</script>
+
 
 	</head>
 	<body>
@@ -511,6 +624,13 @@
 		var normalMapShiny = loadTexture( "textures/shiny_metal/shiny_fabric_normal.jpg" );
 		var aoMapShiny = loadTexture( "textures/shiny_metal/shiny_fabric_ao.jpg");
 		var roughnessMapShiny = loadTexture( "textures/shiny_metal/shiny_fabric_roughness.jpg");
+
+		// texture leather material
+		var normalMapLeather = loadTexture( "textures/leather/leather_normal2.jpg" );
+		var diffuseMapLeather = loadTexture( "textures/leather/leather_baseColor2.jpg" );
+		var aoMapLeather = loadTexture( "textures/leather/leather_ao2.jpg");
+		var roughnessMapLeather = loadTexture( "textures/leather/leather_roughness.png");
+		var specularMapLeather = loadTexture( "textures/leather/leather_specular2.jpg");
 
 		//cubemap
 		var loader1 = new THREE.CubeTextureLoader();
@@ -545,25 +665,22 @@
 		// UNIFORMS SHADERS
 		
 		var uniformsFabric = {
-				//cspec:	{ type: "v3", value: new THREE.Vector3(0.04,0.04,0.04) },
-				//cdiff: {type: "v3", value: new THREE.Vector3(1.00,0.05,0.05)},
 				diffuseMap:	{ type: "t", value: diffuseMapGreen},
-				//roughness: {type: "f", value: 1.0},
 				roughnessMap:	{ type: "t", value: roughnessMap},
 				aoMap:	{ type: "t", value: aoMap },
 				envMap:	{ type: "t", value: textureCubeSunset},
 				textureRepeat: { type: "v2", value: new THREE.Vector2(5,5)},
 				normalMap:	{ type: "t", value: normalMap},
-				normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
+				normalScale: {type: "v2", value: new THREE.Vector2(2,2)},
 				pointLightPosition:{type:"v3", value: [pointLight1Pos, pointLight2Pos, pointLight3Pos]},
 				ambientLight: { type: "v3", value: new THREE.Vector3(
 					ambientLightParameters.red * 1.0,
 					ambientLightParameters.green * 1.0,
 					ambientLightParameters.blue * 1.0)},
 				clight:	{ type: "v3", value: new THREE.Vector3(
-					lightParameters.red * 0.9,
-					lightParameters.green * 0.9,
-					lightParameters.blue * 0.9)}
+					lightParameters.red * 1.0,
+					lightParameters.green * 1.0,
+					lightParameters.blue * 1.0)}
 		};
 
 		var uniformsShiny = {
@@ -586,26 +703,48 @@
 					lightParameters.blue * 1.3)}
 		};
 
+		var uniformsLeather = {
+				specularMap: { type: "t", value: specularMapLeather},
+				diffuseMap:	{ type: "t", value: diffuseMapLeather},
+				roughnessMap:	{ type: "t", value: roughnessMapLeather},
+				aoMap:	{ type: "t", value: aoMapLeather },
+				envMap:	{ type: "t", value: textureCubeSunset},
+				textureRepeat: { type: "v2", value: new THREE.Vector2(3,3)},
+				normalMap:	{ type: "t", value: normalMapLeather},
+				normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
+				pointLightPosition:{type:"v3", value: [pointLight1Pos, pointLight2Pos, pointLight3Pos]},
+				ambientLight: { type: "v3", value: new THREE.Vector3(
+					ambientLightParameters.red * 1.0,
+					ambientLightParameters.green * 1.0,
+					ambientLightParameters.blue * 1.0)},
+				clight:	{ type: "v3", value: new THREE.Vector3(
+					lightParameters.red * 0.9,
+					lightParameters.green * 0.9,
+					lightParameters.blue * 0.9)}
+		};
 		
 
 		// MATERIALI
 
 		vsFabric = document.getElementById("vertex-allshaders").textContent;
 		fsFabric = document.getElementById("fragment-fabric").textContent;
-		//vsLeather = document.getElementById("vertex-leather").textContent;
-		//fsLeather = document.getElementById("fragment-leather").textContent;
+		
 		vsShiny = document.getElementById("vertex-allshaders").textContent;
 		fsShiny = document.getElementById("fragment-shiny").textContent;
+		
+		vsLeather = document.getElementById("vertex-allshaders").textContent;
+		fsLeather = document.getElementById("fragment-leather").textContent;
 
 		fabricMaterial = new THREE.ShaderMaterial({ uniforms: uniformsFabric, vertexShader: vsFabric, fragmentShader: fsFabric });
 		shinyMaterial = new THREE.ShaderMaterial({ uniforms: uniformsShiny, vertexShader: vsShiny, fragmentShader: fsShiny });
-		//leatherMaterial = new THREE.ShaderMaterial({ uniforms: uniformsLeather, vertexShader: vsLeather, fragmentShader: fsLeather });
+		leatherMaterial = new THREE.ShaderMaterial({ uniforms: uniformsLeather, vertexShader: vsLeather, fragmentShader: fsLeather });
 
 		//fabricMaterial.vertexTangents = true;
 
 		// permetto update dei materiali
 		fabricMaterial.needsUpdate = true;
 		shinyMaterial.needsUpdate = true;
+		leatherMaterial.needsUpdate = true;
 		
 		
 
@@ -831,6 +970,7 @@
 
 				$("#elegantButton").css({"background-color":"#424242","color":"white"});
 				$("#partyButton").css({"background-color":"white","color":"#424242"});
+				$("#leatherButton").css({"background-color":"white","color":"#424242"});
 
 				// cambio materiale a tutti i cuscini
 				cushion1.material = fabricMaterial;
@@ -844,11 +984,26 @@
 
 				$("#partyButton").css({"background-color":"#424242","color":"white"});
 				$("#elegantButton").css({"background-color":"white","color":"#424242"});
+				$("#leatherButton").css({"background-color":"white","color":"#424242"});
 
 				// cambio materiale a tutti i cuscini
 				cushion1.material = shinyMaterial;
 				cushion2.material = shinyMaterial;
 				cushion3.material = shinyMaterial;
+			});
+
+			$("#leatherButton").click(function() {
+				$("#shinyOptions").css("display", "block");
+				$("#fabricOptions").css("display", "none");
+
+				$("#leatherButton").css({"background-color":"#424242","color":"white"});
+				$("#elegantButton").css({"background-color":"white","color":"#424242"});
+				$("#shinyButton").css({"background-color":"white","color":"#424242"});
+
+				// cambio materiale a tutti i cuscini
+				cushion1.material = leatherMaterial;
+				cushion2.material = leatherMaterial;
+				cushion3.material = leatherMaterial;
 			});
 
 			
@@ -940,7 +1095,7 @@
 				<div id="materialButtons">
 					<input type="button" value="Elegant" id="elegantButton">
 					<input type="button" value="Party" id="partyButton">
-					<input type="button" value="Pelle" onclick="">
+					<input type="button" value="Pelle" id="leatherButton">
 				</div>
 				<div id="fabricOptions" class="materialOptions">
 					<p>Tessuto in cotone di alta qualità.</p>
