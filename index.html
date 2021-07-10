@@ -224,24 +224,46 @@
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
 
-		<script src="lib/three.min.js"></script>
-		<script src="lib/stats.min.js"></script>
-		<script src="lib/OBJLoader.js"></script>
-		<script src="lib/OrbitControls.js"></script>
+		<script src="libs/three.js"></script>
+		<script src="libs/stats.min.js"></script>
+		<script src="libs/OBJLoader.js"></script>
+		<script src="libs/OrbitControls.js"></script>
+		<script src="libs/BufferGeometryUtils.js"></script>
+		<script src="libs/BufferGeometryToIndexed.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
+	
         <script type="text/x-glsl" id="vertex-fabric">
+			attribute vec4 tangent;
+
 			varying vec3 vNormal;
 			varying vec3 vPosition;
 			varying vec3 wPosition;
 			varying vec2 uVv;
+
+			varying vec3 vTangent;
+    		varying vec3 vBitangent;
 	
 			void main() {
 				vec4 vPos = modelViewMatrix * vec4( position, 1.0 );
 				vPosition = vPos.xyz;
-				wPosition = (modelMatrix * vec4( position, 1.0 )).xyz;
-				vNormal = normalMatrix * normal;
+
 				uVv = uv;
+
+				// posizione vertice in world space
+				wPosition = (modelMatrix * vec4( position, 1.0 )).xyz;
+
+				// porto normale in view space
+				vNormal = normalMatrix * normal;
+
+				// trovo tangente normalizzata in eye space
+				vec3 objectTangent = vec3( tangent.xyz );
+				vec3 transformedTangent = normalMatrix * objectTangent;
+				vTangent = normalize( transformedTangent );
+
+				// trovo bitangente
+				vBitangent = normalize( cross( vNormal, vTangent ) * tangent.w );
+
 				gl_Position = projectionMatrix * vPos;
 			}
 		</script>
@@ -249,78 +271,68 @@
 		<script type="text/x-glsl" id="fragment-fabric">
 			varying vec3 vNormal;
 			varying vec3 vPosition;
+			varying vec3 wPosition;
 			varying vec2 uVv;
+			varying vec3 vTangent;
+    		varying vec3 vBitangent;
+
 			uniform vec3 pointLightPosition[3]; // in world space
-
 			uniform vec3 ambientLight;
-
 			uniform vec3 clight;
 			uniform vec3 cspec;
 			
-
+			// uniform texture
 			uniform sampler2D aoMap;
-			uniform vec2 textureRepeat;
-
 			uniform sampler2D normalMap;
-			uniform vec2 normalScale;
-
 			uniform sampler2D diffuseMap;
 			uniform sampler2D roughnessMap;
-
-			varying vec3 wPosition;
 			uniform samplerCube envMap;
+			uniform vec2 textureRepeat;
+			uniform vec2 normalScale;
 
 			vec3 cdiff;
 			float roughness;
 			const float PI = 3.14159;
 
-			vec3 FSchlick(float lDoth) {
-				return (cspec + (vec3(1.0)-cspec)*pow(1.0 - lDoth,5.0));
+			// funzioni per il calcolo della BRDF
+			vec3 FSchlick(float vDoth, vec3 f0) {
+				return f0 + (vec3(1.0)-f0)*pow(1.0 - vDoth,5.0);
 			}
-
-			float DGGX(float nDoth, float alpha) {
+			float DGGX(float NoH, float alpha) {
+				float alpha2 = alpha * alpha;
+				float k = NoH*NoH * (alpha2 - 1.0) + 1.0;
+    			return alpha2 / (PI * k * k );
+			}
+			float G1(float nDotv, float alpha) {
 				float alpha2 = alpha*alpha;
-				float d = nDoth*nDoth*(alpha2-1.0)+1.0;
-				return (  alpha2 / (PI*d*d));
+				return 2.0 * (nDotv / (nDotv + sqrt(alpha2 + (1.0-alpha2)*nDotv*nDotv )));
+			}
+			float GSmith(float nDotv, float nDotl, float alpha) {
+				return G1(nDotl,alpha)*G1(nDotv,alpha);
 			}
 
-			float G1(float dotProduct, float k) {
-				return (dotProduct / (dotProduct*(1.0-k) + k) );
-			}
-
-			float GSmith(float nDotv, float nDotl) {
-					float k = roughness*roughness;
-					return G1(nDotl,k)*G1(nDotv,k);
-			}
-
-			#extension GL_OES_standard_derivatives : enable
-	
-			vec3 perturbNormal2Arb( vec3 eye_pos, vec3 surf_norm ) {
-	
-				vec3 q0 = dFdx( eye_pos.xyz );
-				vec3 q1 = dFdy( eye_pos.xyz );
-				vec2 st0 = dFdx( uVv.st );
-				vec2 st1 = dFdy( uVv.st );
-	
-				vec3 S = normalize(  q0 * st1.t - q1 * st0.t );
-				vec3 T = normalize( -q0 * st1.s + q1 * st0.s );
-				vec3 N =  surf_norm ;
-	
-				vec3 mapN = normalize(texture2D( normalMap, uVv*textureRepeat ).xyz * 2.0 - 1.0);
-				mapN.xy = normalScale * mapN.xy;
-				mat3 tsn = mat3( S, T, N );
-				return normalize( tsn * mapN );
-	
-			}
-			
+			// funzione per ...
 			// http://en.wikibooks.org/wiki/GLSL_Programming/Applying_Matrix_Transformations
 			vec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {
 				return normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );
 			}
 
 			void main() {
+				// rinormalizzo perché interpolazione distrugge la normalizzazione
+				vec3 normal = normalize( vNormal );
+				vec3 tangent = normalize( vTangent );
+				vec3 bitangent = normalize( vBitangent );
 
-				vec3 n = perturbNormal2Arb( vPosition, normalize( vNormal ));
+				// matrice per passare da tangent space a view space
+				mat3 vTBN = mat3( tangent, bitangent, normal );
+				
+				// leggo normale da texture e la porto in spazio tangente
+				vec3 mapN = texture2D( normalMap, uVv*textureRepeat ).xyz * 2.0 - 1.0;
+				mapN.xy = normalScale * mapN.xy;
+
+				// porto normale in eye space
+        		vec3 n = normalize( vTBN * mapN );
+
 				vec3 v = normalize( -vPosition);
 				float nDotv = max(dot( n, v ),0.000001);
 
@@ -329,17 +341,15 @@
 				vec3 r = normalize( reflect(-worldV,worldN));
 
 				cdiff = texture2D( diffuseMap, uVv*textureRepeat ).rgb;
-				// texture in sRGB, linearize
-				cdiff = pow( cdiff, vec3(2.2));
+				cdiff = pow( cdiff, vec3(2.2)); // linearizzo la texture
+
+				roughness = texture2D( roughnessMap, uVv*textureRepeat).r; // non serve linearizzare la roughness map
+
+				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
+				envLight = pow( envLight, vec3(2.2)); // linearizzo la texture
 
 				vec3 BRDFtotale;
 				//vec3 fresnelTotale;
-
-				roughness = texture2D( roughnessMap, uVv*textureRepeat).r; // no need to linearize roughness map
-
-				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
-				// texture in sRGB, linearize
-				envLight = pow( envLight, vec3(2.2));
 
 				for(int i=0; i<3; i++){
 
@@ -347,123 +357,62 @@
 					vec3 l = normalize(lPosition.xyz - vPosition.xyz);
 					vec3 h = normalize( v + l);
 
-					// small quantity to prevent divisions by 0
-					float nDotl = max(dot( n, l ),0.000001);
+					float nDotl = max(dot( n, l ),0.000001); // il prodotto non deve mai essere zero
 					float lDoth = max(dot( l, h ),0.000001);
 					float nDoth = max(dot( n, h ),0.000001);
 					float vDoth = max(dot( v, h ),0.000001);
 
-					
+					vec3 fresnel = FSchlick(vDoth, cspec);
+					float alpha = roughness * roughness;
 
-					vec3 fresnel = FSchlick(lDoth);
-					vec3 BRDF = (vec3(1.0)-fresnel)*cdiff/PI + fresnel*GSmith(nDotv,nDotl)*DGGX(nDoth,roughness*roughness)/
+					vec3 BRDF = (vec3(1.0)-fresnel)*cdiff/PI + fresnel*GSmith(nDotv,nDotl, alpha)*DGGX(nDoth,alpha)/
 						(4.0*nDotl*nDotv);
 
 					BRDFtotale += BRDF*clight*nDotl;
 					//fresnelTotale += fresnel;
 				}
 
-				// 
+				
 				vec3 outRadiance =  envLight * PI * BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;
-				// gamma encode the final value
+				
+				// gamma encoding
 				gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
-
-
+				
 			}
 		</script>
 
-		<!--<script type="text/x-glsl" id="vertex-fabric">
-			varying vec3 vNormal;
-			varying vec3 vPosition;
-			varying vec2 uVv;
-	
-			void main() {
-				vec4 vPos = modelViewMatrix * vec4( position, 1.0 );
-				vPosition = vPos.xyz;
-				vNormal = normalMatrix * normal;
-				uVv = uv;
-				gl_Position = projectionMatrix * vPos;
-			}
-		</script>
-	
-		<script type="text/x-glsl" id="fragment-fabric">
-			varying vec3 vNormal;
-			varying vec3 vPosition;
-			varying vec2 uVv;
-
-			uniform vec3 pointLightPosition; // in world space
-			uniform vec3 clight;
-			
-			uniform vec3 ambientLight;
-			uniform sampler2D aoMap;
-
-			uniform vec2 textureRepeat;
-			uniform sampler2D normalMap;
-			uniform vec2 normalScale;
-
-			uniform sampler2D diffuseMap;
-			vec3 cdiff;
-
-			//uniform samplerCube envMap;
-
-			
-			const float PI = 3.14159;
-	
-			#extension GL_OES_standard_derivatives : enable
-	
-			vec3 perturbNormal2Arb( vec3 eye_pos, vec3 surf_norm ) {
-	
-				vec3 q0 = dFdx( eye_pos.xyz );
-				vec3 q1 = dFdy( eye_pos.xyz );
-				vec2 st0 = dFdx( uVv.st );
-				vec2 st1 = dFdy( uVv.st );
-	
-				vec3 S = normalize(  q0 * st1.t - q1 * st0.t );
-				vec3 T = normalize( -q0 * st1.s + q1 * st0.s );
-				vec3 N =  surf_norm ;
-	
-				vec3 mapN = normalize(texture2D( normalMap, uVv*textureRepeat ).xyz * 2.0 - 1.0);
-				mapN.xy = normalScale * mapN.xy;
-				mat3 tsn = mat3( S, T, N );
-				return normalize( tsn * mapN );
-	
-			}
-
-			void main() {
-				vec4 lPosition = viewMatrix * vec4( pointLightPosition, 1.0 );
-				vec3 l = normalize(lPosition.xyz - vPosition.xyz);
-				vec3 n = perturbNormal2Arb( vPosition, normalize( vNormal )); // interpolation destroys normalization, so we have to normalize
-				float nDotl = max(dot( n, l ),0.0);
-	
-				cdiff = texture2D( diffuseMap, uVv*textureRepeat ).rgb;
-				// texture in sRGB, linearize
-				cdiff = pow( cdiff, vec3(2.2));
-
-				// formula would be:
-				// outRadiance = clight * PI * cdiff/PI * nDotl, the two PI cancel out
-	
-				vec3 diffRadiance = clight * nDotl * cdiff;
-	
-				//vec3 outRadiance = PI* diffRadiance + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;;
-				// gamma encode the final value
-	
-				gl_FragColor = vec4(pow( diffRadiance, vec3(1.0/2.2)), 1.0);
-				//gl_FragColor = vec4(vNormal, 1.0);
-			}
-		</script>-->
-
+		
 		<script type="text/x-glsl" id="vertex-shiny">
+			attribute vec4 tangent;
+
 			varying vec3 vNormal;
 			varying vec3 vPosition;
 			varying vec3 wPosition;
 			varying vec2 uVv;
+
+			varying vec3 vTangent;
+    		varying vec3 vBitangent;
 	
 			void main() {
 				vec4 vPos = modelViewMatrix * vec4( position, 1.0 );
 				vPosition = vPos.xyz;
-				wPosition = (modelMatrix * vec4( position, 1.0 )).xyz;
-				vNormal = normalMatrix * normal;
+
 				uVv = uv;
+
+				// posizione vertice in world space
+				wPosition = (modelMatrix * vec4( position, 1.0 )).xyz;
+
+				// porto normale in view space
+				vNormal = normalMatrix * normal;
+
+				// trovo tangente normalizzata in eye space
+				vec3 objectTangent = vec3( tangent.xyz );
+				vec3 transformedTangent = normalMatrix * objectTangent;
+				vTangent = normalize( transformedTangent );
+
+				// trovo bitangente
+				vBitangent = normalize( cross( vNormal, vTangent ) * tangent.w );
+
 				gl_Position = projectionMatrix * vPos;
 			}
 		</script>
@@ -471,92 +420,68 @@
 		<script type="text/x-glsl" id="fragment-shiny">
 			varying vec3 vNormal;
 			varying vec3 vPosition;
+			varying vec3 wPosition;
 			varying vec2 uVv;
+			varying vec3 vTangent;
+    		varying vec3 vBitangent;
+
 			uniform vec3 pointLightPosition[3]; // in world space
-
 			uniform vec3 ambientLight;
-
 			uniform vec3 clight;
 			uniform vec3 cspec;
+			uniform vec3 cdiff;
 			
-
+			// uniform texture
 			uniform sampler2D aoMap;
-			uniform vec2 textureRepeat;
-		
-
 			uniform sampler2D normalMap;
+			uniform sampler2D roughnessMap;
+			uniform samplerCube envMap;
+			uniform vec2 textureRepeat;
+			uniform vec2 textureRepeatRoughness;
 			uniform vec2 normalScale;
 
-			//uniform sampler2D diffuseMap;
-			uniform sampler2D roughnessMap;
-			uniform vec2 textureRepeatRoughness; //aggiunta
-
-			varying vec3 wPosition;
-			uniform samplerCube envMap;
-
-			uniform vec3 cdiff;
 			float roughness;
 			const float PI = 3.14159;
 
-
-			//float random (vec2 st) {
-				//return fract(sin(dot(st.xy,vec2(12.9898,78.233)))*43758.5453123);
-			//}
-			
-
-			vec3 FSchlick(float lDoth) {
-				return (cspec + (vec3(1.0)-cspec)*pow(1.0 - lDoth,5.0));
+			// funzioni per il calcolo della BRDF
+			vec3 FSchlick(float vDoth, vec3 f0) {
+				return f0 + (vec3(1.0)-f0)*pow(1.0 - vDoth,5.0);
 			}
-
-			float DGGX(float nDoth, float alpha) {
+			float DGGX(float NoH, float alpha) {
+				float alpha2 = alpha * alpha;
+				float k = NoH*NoH * (alpha2 - 1.0) + 1.0;
+    			return alpha2 / (PI * k * k );
+			}
+			float G1(float nDotv, float alpha) {
 				float alpha2 = alpha*alpha;
-				float d = nDoth*nDoth*(alpha2-1.0)+1.0;
-				return (  alpha2 / (PI*d*d));
+				return 2.0 * (nDotv / (nDotv + sqrt(alpha2 + (1.0-alpha2)*nDotv*nDotv )));
+			}
+			float GSmith(float nDotv, float nDotl, float alpha) {
+				return G1(nDotl,alpha)*G1(nDotv,alpha);
 			}
 
-			float G1(float dotProduct, float k) {
-				return (dotProduct / (dotProduct*(1.0-k) + k) );
-			}
-
-			float GSmith(float nDotv, float nDotl) {
-					float k = roughness*roughness;
-					return G1(nDotl,k)*G1(nDotv,k);
-			}
-
-			#extension GL_OES_standard_derivatives : enable
-	
-			vec3 perturbNormal2Arb( vec3 eye_pos, vec3 surf_norm ) {
-	
-				vec3 q0 = dFdx( eye_pos.xyz );
-				vec3 q1 = dFdy( eye_pos.xyz );
-				vec2 st0 = dFdx( uVv.st );
-				vec2 st1 = dFdy( uVv.st );
-	
-				vec3 S = normalize(  q0 * st1.t - q1 * st0.t );
-				vec3 T = normalize( -q0 * st1.s + q1 * st0.s );
-				vec3 N =  surf_norm ;
-	
-				vec3 mapN = normalize(texture2D( normalMap, uVv*textureRepeat ).xyz * 2.0 - 1.0);
-				mapN.xy = normalScale * mapN.xy;
-				mat3 tsn = mat3( S, T, N );
-				return normalize( tsn * mapN );
-	
-			}
-	
+			// funzione per ...
 			// http://en.wikibooks.org/wiki/GLSL_Programming/Applying_Matrix_Transformations
 			vec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {
 				return normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );
 			}
 
 			void main() {
+				// rinormalizzo perché interpolazione distrugge la normalizzazione
+				vec3 normal = normalize( vNormal );
+				vec3 tangent = normalize( vTangent );
+				vec3 bitangent = normalize( vBitangent );
 
-				//vec2 st = vec2(vPosition.x, vPosition.y);
-				//float rnd1 = random( st );
-				//float rnd2 = random( st );
-				//float rnd3 = random( st );
+				// matrice per passare da tangent space a view space
+				mat3 vTBN = mat3( tangent, bitangent, normal );
 				
+				// leggo normale da texture e la porto in spazio tangente
+				vec3 mapN = texture2D( normalMap, uVv*textureRepeat ).xyz * 2.0 - 1.0;
+				mapN.xy = normalScale * mapN.xy;
 
-				vec3 n = perturbNormal2Arb( vPosition, normalize( vNormal ));
+				// porto normale in eye space
+        		vec3 n = normalize( vTBN * mapN );
+
 				vec3 v = normalize( -vPosition);
 				float nDotv = max(dot( n, v ),0.000001);
 
@@ -564,18 +489,13 @@
 				vec3 worldV = cameraPosition - wPosition ;
 				vec3 r = normalize( reflect(-worldV,worldN));
 
-				//cdiff = texture2D( diffuseMap, uVv*textureRepeat ).rgb;
-				// texture in sRGB, linearize
-				//cdiff = pow( cdiff, vec3(2.2));
+				roughness = texture2D( roughnessMap, uVv*textureRepeatRoughness ).r; // non serve linearizzare la roughness map
+
+				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
+				envLight = pow( envLight, vec3(2.2)); // linearizzo la texture
 
 				vec3 BRDFtotale;
 				//vec3 fresnelTotale;
-
-				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
-				// texture in sRGB, linearize
-				envLight = pow( envLight, vec3(2.2));
-
-				roughness = texture2D( roughnessMap, uVv*textureRepeatRoughness).r; // no need to linearize roughness map
 
 				for(int i=0; i<3; i++){
 
@@ -583,27 +503,30 @@
 					vec3 l = normalize(lPosition.xyz - vPosition.xyz);
 					vec3 h = normalize( v + l);
 
-					// small quantity to prevent divisions by 0
-					float nDotl = max(dot( n, l ),0.000001);
+					float nDotl = max(dot( n, l ),0.000001); // il prodotto non deve mai essere zero
 					float lDoth = max(dot( l, h ),0.000001);
 					float nDoth = max(dot( n, h ),0.000001);
 					float vDoth = max(dot( v, h ),0.000001);
 
-					
+					vec3 fresnel = FSchlick(vDoth, cspec);
+					float alpha = roughness * roughness;
 
-					
-					vec3 BRDF = FSchlick(lDoth)*GSmith(nDotv,nDotl)*DGGX(nDoth,roughness*roughness)/
+					vec3 BRDF = fresnel*GSmith(nDotv,nDotl, alpha)*DGGX(nDoth,alpha)/
 						(4.0*nDotl*nDotv);
 
 					BRDFtotale += BRDF*clight*nDotl;
 					//fresnelTotale += fresnel;
 				}
 
-				vec3 outRadiance = envLight * PI* BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;;
-				// gamma encode the final value
+				
+				vec3 outRadiance =  envLight * PI * BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;
+				
+				// gamma encoding
 				gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
+				
 			}
 		</script>
+
 
 	</head>
 	<body>
@@ -675,15 +598,16 @@
 
 
 		// UNIFORMS SHADERS
+		
 		var uniformsFabric = {
-				cspec:	{ type: "v3", value: new THREE.Vector3(0.01,0.01,0.01) },
+				cspec:	{ type: "v3", value: new THREE.Vector3(0.04,0.04,0.04) },
 				diffuseMap:	{ type: "t", value: diffuseMapGreen},
 				roughnessMap:	{ type: "t", value: roughnessMap},
 				aoMap:	{ type: "t", value: aoMap },
+				envMap:	{ type: "t", value: textureCubeSunset},
 				textureRepeat: { type: "v2", value: new THREE.Vector2(10,10)},
 				normalMap:	{ type: "t", value: normalMap},
 				normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
-				envMap:	{ type: "t", value: textureCubeSunset},
 				pointLightPosition:{type:"v3", value: [pointLight1Pos, pointLight2Pos, pointLight3Pos]},
 				ambientLight: { type: "v3", value: new THREE.Vector3(
 					ambientLightParameters.red * 1.0,
@@ -696,12 +620,12 @@
 		};
 
 		var uniformsShiny = {
-				cspec:	{ type: "v3", value: new THREE.Vector3(0.5,0.5,0.15) }, //***
-				cdiff: {type: "v3", value: new THREE.Vector3(0.05,0.05,0.05)},  //***
+				cspec:	{ type: "v3", value: new THREE.Vector3(0.5,0.5,0.15) }, 
+				cdiff: {type: "v3", value: new THREE.Vector3(0.05,0.05,0.05)},
 				roughnessMap:	{ type: "t", value: roughnessMapShiny},
 				aoMap:	{ type: "t", value: aoMapShiny},
 				envMap:	{ type: "t", value: textureCubeSunset},
-				textureRepeatRoughness: {type: "v2", value: new THREE.Vector2(4,4)}, //***
+				textureRepeatRoughness: {type: "v2", value: new THREE.Vector2(4,4)},
 				textureRepeat: { type: "v2", value: new THREE.Vector2(12,12)},
 				normalMap:	{ type: "t", value: normalMapShiny},
 				normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
@@ -730,6 +654,12 @@
 		fabricMaterial = new THREE.ShaderMaterial({ uniforms: uniformsFabric, vertexShader: vsFabric, fragmentShader: fsFabric });
 		shinyMaterial = new THREE.ShaderMaterial({ uniforms: uniformsShiny, vertexShader: vsShiny, fragmentShader: fsShiny });
 		//leatherMaterial = new THREE.ShaderMaterial({ uniforms: uniformsLeather, vertexShader: vsLeather, fragmentShader: fsLeather });
+
+		fabricMaterial.vertexTangents = true;
+
+		// permetto update dei materiali
+		fabricMaterial.needsUpdate = true;
+		shinyMaterial.needsUpdate = true;
 		
 		
 
@@ -758,8 +688,6 @@
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			renderer.setPixelRatio( window.devicePixelRatio );
-			renderer.gammaInput = true;
-			renderer.gammaOutput = true;
 			//renderer.shadowMap.enabled = true;
 
 
@@ -773,9 +701,6 @@
 			camera.lookAt( new THREE.Vector3( 0, 1, 0 ) );
 
 
-			// permetto update dei materiali
-            fabricMaterial.needsUpdate = true;
-			shinyMaterial.needsUpdate = true;
 
 			// imposto cubemap
 			scene.background = textureCubeSunset;
@@ -827,43 +752,47 @@
 				"models/cushion.obj",
 				function(obj){
 
-					obj.children.forEach(createNewGeometry);
+					var geometry = obj.children[0].geometry;
 
-					function createNewGeometry(children){
-						var geometry = children.geometry;
-						cushion1 = new THREE.Mesh( geometry, fabricMaterial );
-						cushion2 = new THREE.Mesh( geometry, fabricMaterial );
-						cushion3 = new THREE.Mesh( geometry, fabricMaterial );
+					geometry = geometry.toIndexed();
+					geometry.computeVertexNormals();
+					THREE.BufferGeometryUtils.computeTangents(geometry);
 
-						cushion1.scale.set(0.3, 0.3, 0.3);
-						cushion1.rotation.z = 110 * Math.PI/180;
-						cushion1.rotation.y = -50 * Math.PI/180;
-						cushion1.position.x = -140;
+					cushion1 = new THREE.Mesh( geometry, fabricMaterial );
+					cushion2 = new THREE.Mesh( geometry, fabricMaterial );
+					cushion3 = new THREE.Mesh( geometry, fabricMaterial );
 
-						cushion2.scale.set(0.3, 0.3, 0.3);
-						cushion2.rotation.z = -105 * Math.PI/180;
-						cushion2.rotation.y = 90 * Math.PI/180;
-						cushion2.position.set(0, 0, -40);
+					cushion1.scale.set(0.3, 0.3, 0.3);
+					cushion1.rotation.z = 80 * Math.PI/180;
+					cushion1.rotation.y = 130 * Math.PI/180;
+					cushion1.position.x = -140;
 
-						cushion3.scale.set(0.3, 0.3, 0.3);
-						cushion3.rotation.z = -110 * Math.PI/180;
-						cushion3.rotation.y = 50 * Math.PI/180;
-						cushion3.position.x = 140;
+					cushion2.scale.set(0.3, 0.3, 0.3);
+					cushion2.rotation.z = -105 * Math.PI/180;
+					cushion2.rotation.y = 90 * Math.PI/180;
+					cushion2.position.set(0, 0, -40);
 
-						/*cushion1.castShadow = true;
-						cushion2.castShadow = true;
-						cushion1.receiveShadow = true;
-						cushion2.receiveShadow = true;*/
+					cushion3.scale.set(0.3, 0.3, 0.3);
+					cushion3.rotation.z = -110 * Math.PI/180;
+					cushion3.rotation.y = 50 * Math.PI/180;
+					cushion3.position.x = 140;
 
-						scene.add( cushion1 );
-						scene.add( cushion2 );
-						scene.add( cushion3 );
+					/*cushion1.castShadow = true;
+					cushion2.castShadow = true;
+					cushion1.receiveShadow = true;
+					cushion2.receiveShadow = true;*/
+					
+					//const helper = new VertexTangentsHelper( box, 1, 0x00ffff, 1 );
+					//scene.add( helper );
+					
 
-						//objects.push(mesh);}
-						loadingComplete = true;
-						console.log("OBJ");
+					scene.add( cushion1 );
+					scene.add( cushion2 );
+					scene.add( cushion3 );
+
+					//objects.push(mesh);}
 						
-					}
+					
 				}
 			);
 
@@ -907,7 +836,7 @@
 			
 			// ORBIT CONTROLS
 
-			controls = new THREE.OrbitControls(camera);
+			controls = new THREE.OrbitControls(camera, renderer.domElement);
 			controls.enablePan = false;
 			controls.minDistance = 200;
 			controls.maxDistance = 400;
@@ -1036,14 +965,13 @@
 		Start();
 		Update();
 		
-		console.log(scene);
 			
 
 		</script>
 
 		<!--menu-->
 		<div class="topnav">
-			<img src="img/acme_logo.png" alt="logo">
+			<img src="imgs/acme_logo.png" alt="logo">
 			<a href="#">Lampade</a>
 			<a href="#">Divani</a>
 			<a class="active" href="#">Accessori</a>
