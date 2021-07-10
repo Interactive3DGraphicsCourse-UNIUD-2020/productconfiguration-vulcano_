@@ -398,7 +398,6 @@
 			uniform sampler2D roughnessMap;
 			uniform samplerCube envMap;
 			uniform vec2 textureRepeat;
-			uniform vec2 textureRepeatRoughness;
 			uniform vec2 normalScale;
 
 			float roughness;
@@ -452,7 +451,7 @@
 				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
 				envLight = pow( envLight, vec3(2.2)); // linearizzo la texture
 
-				roughness = texture2D( roughnessMap, uVv*textureRepeatRoughness ).r; // non serve linearizzare la roughness map
+				roughness = texture2D( roughnessMap, uVv*textureRepeat ).r; // non serve linearizzare la roughness map
 
 				vec3 BRDFtotale;
 
@@ -467,10 +466,9 @@
 					float nDoth = max(dot( n, h ),0.000001);
 					float vDoth = max(dot( v, h ),0.000001);
 
-					vec3 fresnel = FSchlick(vDoth, cspec);
 					float alpha = roughness * roughness;
 
-					vec3 BRDF = fresnel*GSmith(nDotv,nDotl, alpha)*DGGX(nDoth,alpha)/
+					vec3 BRDF = FSchlick(vDoth, cspec)*GSmith(nDotv,nDotl, alpha)*DGGX(nDoth,alpha)/
 						(4.0*nDotl*nDotv);
 
 					BRDFtotale += PI * BRDF * clight * nDotl;
@@ -574,8 +572,7 @@
 				roughnessMap:	{ type: "t", value: roughnessMapShiny},
 				aoMap:	{ type: "t", value: aoMapShiny},
 				envMap:	{ type: "t", value: textureCubeSunset},
-				textureRepeatRoughness: {type: "v2", value: new THREE.Vector2(4,4)},
-				textureRepeat: { type: "v2", value: new THREE.Vector2(12,12)},
+				textureRepeat: { type: "v2", value: new THREE.Vector2(6,6)},
 				normalMap:	{ type: "t", value: normalMapShiny},
 				normalScale: {type: "v2", value: new THREE.Vector2(1,1)},
 				pointLightPosition:{type:"v3", value: [pointLight1Pos, pointLight2Pos, pointLight3Pos]},
