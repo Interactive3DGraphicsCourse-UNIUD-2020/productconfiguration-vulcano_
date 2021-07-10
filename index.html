@@ -268,7 +268,7 @@
 			}
 		</script>
 	
-		<script type="text/x-glsl" id="fragment-fabric">
+		<script type="text/x-glsl" id="fragment-cotton">
 			varying vec3 vNormal;
 			varying vec3 vPosition;
 			varying vec3 wPosition;
@@ -612,25 +612,27 @@
 
 		// TEXTURE
 
-		// texture fabric material
-		var normalMap = loadTexture( "textures/fabric/fabric_normal.jpg" );
-		var diffuseMapGreen = loadTexture( "textures/fabric/green_baseColor.jpg" );
-		var diffuseMapPink = loadTexture( "textures/fabric/pink_baseColor.jpg" );
-		var diffuseMapBlue = loadTexture( "textures/fabric/blue_baseColor.jpg" );
-		var aoMap = loadTexture( "textures/fabric/fabric_ao.jpg");
-		var roughnessMap = loadTexture( "textures/fabric/fabric_roughness.jpg");
+		// texture cotton material
+		var normalMapCotton = loadTexture( "textures/cotton/cotton_normal.jpg" );
+		var diffuseMapCottonGreen = loadTexture( "textures/cotton/cotton_diffuse_green.jpg" );
+		var diffuseMapCottonPink = loadTexture( "textures/cotton/cotton_diffuse_pink.jpg" );
+		var diffuseMapCottonBlue = loadTexture( "textures/cotton/cotton_diffuse_blue.jpg" );
+		var aoMapCotton = loadTexture( "textures/cotton/cotton_ao.jpg");
+		var roughnessMapCotton = loadTexture( "textures/cotton/cotton_roughness.jpg");
 
 		// texture shiny fabric material
-		var normalMapShiny = loadTexture( "textures/shiny_metal/shiny_fabric_normal.jpg" );
-		var aoMapShiny = loadTexture( "textures/shiny_metal/shiny_fabric_ao.jpg");
-		var roughnessMapShiny = loadTexture( "textures/shiny_metal/shiny_fabric_roughness.jpg");
+		var normalMapShiny = loadTexture( "textures/shiny_fabric/shiny_fabric_normal.jpg" );
+		var aoMapShiny = loadTexture( "textures/shiny_fabric/shiny_fabric_ao.jpg");
+		var roughnessMapShiny = loadTexture( "textures/shiny_fabric/shiny_fabric_roughness.jpg");
 
 		// texture leather material
-		var normalMapLeather = loadTexture( "textures/leather/leather_normal2.jpg" );
-		var diffuseMapLeather = loadTexture( "textures/leather/leather_baseColor2.jpg" );
-		var aoMapLeather = loadTexture( "textures/leather/leather_ao2.jpg");
+		var normalMapLeather = loadTexture( "textures/leather/leather_normal.jpg" );
+		var diffuseMapLeatherRed = loadTexture( "textures/leather/leather_diffuse_red.jpg" );
+		var diffuseMapLeatherBlue = loadTexture( "textures/leather/leather_diffuse_blue.jpg" );
+		var diffuseMapLeatherBrown = loadTexture( "textures/leather/leather_diffuse_brown.jpg" );
+		var aoMapLeather = loadTexture( "textures/leather/leather_ao.jpg");
 		var roughnessMapLeather = loadTexture( "textures/leather/leather_roughness.png");
-		var specularMapLeather = loadTexture( "textures/leather/leather_specular2.jpg");
+		var specularMapLeather = loadTexture( "textures/leather/leather_specular.jpg");
 
 		//cubemap
 		var loader1 = new THREE.CubeTextureLoader();
@@ -664,13 +666,13 @@
 
 		// UNIFORMS SHADERS
 		
-		var uniformsFabric = {
-				diffuseMap:	{ type: "t", value: diffuseMapGreen},
-				roughnessMap:	{ type: "t", value: roughnessMap},
-				aoMap:	{ type: "t", value: aoMap },
+		var uniformsCotton = {
+				diffuseMap:	{ type: "t", value: diffuseMapCottonGreen},
+				roughnessMap:	{ type: "t", value: roughnessMapCotton},
+				aoMap:	{ type: "t", value: aoMapCotton },
 				envMap:	{ type: "t", value: textureCubeSunset},
 				textureRepeat: { type: "v2", value: new THREE.Vector2(5,5)},
-				normalMap:	{ type: "t", value: normalMap},
+				normalMap:	{ type: "t", value: normalMapCotton},
 				normalScale: {type: "v2", value: new THREE.Vector2(2,2)},
 				pointLightPosition:{type:"v3", value: [pointLight1Pos, pointLight2Pos, pointLight3Pos]},
 				ambientLight: { type: "v3", value: new THREE.Vector3(
@@ -705,7 +707,7 @@
 
 		var uniformsLeather = {
 				specularMap: { type: "t", value: specularMapLeather},
-				diffuseMap:	{ type: "t", value: diffuseMapLeather},
+				diffuseMap:	{ type: "t", value: diffuseMapLeatherRed},
 				roughnessMap:	{ type: "t", value: roughnessMapLeather},
 				aoMap:	{ type: "t", value: aoMapLeather },
 				envMap:	{ type: "t", value: textureCubeSunset},
@@ -727,7 +729,7 @@
 		// MATERIALI
 
 		vsFabric = document.getElementById("vertex-allshaders").textContent;
-		fsFabric = document.getElementById("fragment-fabric").textContent;
+		fsFabric = document.getElementById("fragment-cotton").textContent;
 		
 		vsShiny = document.getElementById("vertex-allshaders").textContent;
 		fsShiny = document.getElementById("fragment-shiny").textContent;
@@ -735,11 +737,10 @@
 		vsLeather = document.getElementById("vertex-allshaders").textContent;
 		fsLeather = document.getElementById("fragment-leather").textContent;
 
-		fabricMaterial = new THREE.ShaderMaterial({ uniforms: uniformsFabric, vertexShader: vsFabric, fragmentShader: fsFabric });
+		fabricMaterial = new THREE.ShaderMaterial({ uniforms: uniformsCotton, vertexShader: vsFabric, fragmentShader: fsFabric });
 		shinyMaterial = new THREE.ShaderMaterial({ uniforms: uniformsShiny, vertexShader: vsShiny, fragmentShader: fsShiny });
 		leatherMaterial = new THREE.ShaderMaterial({ uniforms: uniformsLeather, vertexShader: vsLeather, fragmentShader: fsLeather });
 
-		//fabricMaterial.vertexTangents = true;
 
 		// permetto update dei materiali
 		fabricMaterial.needsUpdate = true;
@@ -773,25 +774,22 @@
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			renderer.setPixelRatio( window.devicePixelRatio );
-			//renderer.shadowMap.enabled = true;
-
 
 			//TONE MAPPING
 			renderer.toneMapping = THREE.LinearToneMapping;
 
 			document.body.appendChild( renderer.domElement );
 			
+
 			// posizione camera
 			camera.position.set( 0, 70, 230 );
 			camera.lookAt( new THREE.Vector3( 0, 0, 0 ) );
-
 
 
 			// imposto cubemap
 			scene.background = textureCubeSunset;
 
 			
-
 			// SFERE LUCE
 			/*
 			var lightMesh = new THREE.Mesh( new THREE.SphereGeometry( 10, 16, 16),
@@ -812,27 +810,9 @@
 			*/
 		
 
-
-
 			// CARICAMENTO MODELLO
 			var loader = new THREE.OBJLoader();
-
-			/*loader.load(
-					// resource URL
-					"models/cushion.obj",
-					// Function when resource is loaded
-					function ( object ) {
-						var geometry = object.geometry;
-						var cushion = new THREE.Mesh( geometry, ourMaterial );
-						cushion.scale.set(0.3, 0.3, 0.3);
-						cushion.rotation.z = -110 * Math.PI/180;
-						cushion.rotation.y = 40 * Math.PI/180;
-						cushion.position.x = 100;
-						scene.add( cushion );
-					}
-				);*/
 				
-
 			loader.load(
 				"models/cushion.obj",
 				function(obj){
@@ -861,53 +841,24 @@
 					cushion3.rotation.z = -110 * Math.PI/180;
 					cushion3.rotation.y = 50 * Math.PI/180;
 					cushion3.position.x = 140;
-
-					/*cushion1.castShadow = true;
-					cushion2.castShadow = true;
-					cushion1.receiveShadow = true;
-					cushion2.receiveShadow = true;*/
 					
-					//const helper = new VertexTangentsHelper( box, 1, 0x00ffff, 1 );
-					//scene.add( helper );
-					
-
 					scene.add( cushion1 );
 					scene.add( cushion2 );
 					scene.add( cushion3 );
 
-					//objects.push(mesh);}
-						
-					
 				}
 			);
 
-
-			
-
-
-			//LIGHT
-			/*var light = new THREE.DirectionalLight( 0xffffff );
-			light.position.set( 0, 1, 1 ).normalize();
-			light.castShadow=true;
-			light.shadow.camera.near = 0.5;       
-			light.shadow.camera.far = 5000;      
-			light.shadow.camera.left = -500;
-			light.shadow.camera.bottom = -500;
-			light.shadow.camera.right = 500;
-			light.shadow.camera.top = 500;
-			scene.add(light);*/
 
 
 			// PIANO
 
 			var planeGeometry = new THREE.CircleGeometry( 250, 150 );
-			var planeMaterial = new THREE.MeshBasicMaterial( { color: "#cccccc", opacity: 0.5 } ); //NEL CASO CAMBIA MATERIALE
+			var planeMaterial = new THREE.MeshBasicMaterial( { color: "#cccccc", opacity: 0.5 } );
 			planeMaterial.transparent = true;
 			var plane = new THREE.Mesh( planeGeometry, planeMaterial );
 			plane.rotation.x = - Math.PI/2;
 			plane.position.y = -60;
-			//plane.castShadow = false;
-			//plane.receiveShadow = true;
 			scene.add( plane );
 			
 
@@ -929,20 +880,11 @@
 
 
 			// RESIZE 
+
 			window.addEventListener( 'resize', onResize, false );
 
 		}
 		
-
-
-		// CALCOLO POSIZIONE MOUSE
-		function onMouseMove(event) {
-			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-		}
-
-
-
 
 
 		function onResize() {
@@ -1011,19 +953,19 @@
 
 			$("#greenFabricCheck").change(function() {
 				if($(this).prop('checked')) {
-					uniformsFabric.diffuseMap.value = diffuseMapGreen;
+					uniformsCotton.diffuseMap.value = diffuseMapCottonGreen;
 				}
 			});
 
 			$("#pinkFabricCheck").change(function() {
 				if($(this).prop('checked')) {
-					uniformsFabric.diffuseMap.value = diffuseMapPink;
+					uniformsCotton.diffuseMap.value = diffuseMapCottonPink;
 				}
 			});
 
 			$("#blueFabricCheck").change(function() {
 				if($(this).prop('checked')) {
-					uniformsFabric.diffuseMap.value = diffuseMapBlue;
+					uniformsCotton.diffuseMap.value = diffuseMapCottonBlue;
 				}
 			});
 
@@ -1056,18 +998,13 @@
 
 
 		function Render() {
-			//updateUniforms();
 			renderer.render(scene, camera);
-			
 		}
 		
 		
-
 		Start();
 		Update();
 		
-			
-
 		</script>
 
 		<!--menu-->
@@ -1086,7 +1023,7 @@
 			<li><a href="#">Cuscini</a></li>
 			<li><a href="#">Trio cuscini Sunset</a></li>
 			<li>Personalizzazione</li>
-		  </ul>
+		</ul>
 
 		
 		<!--gui-->
@@ -1136,7 +1073,5 @@
 		</div>
 		
 			
-		
-		</div>
 	</body>
 </html>
