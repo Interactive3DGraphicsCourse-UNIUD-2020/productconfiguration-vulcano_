@@ -1,6 +1,6 @@
 # 2 luglio
 - Ricerca online di modelli 3D e di esempi di configuratori di prodotto. 
-- Scelta del modello del cuscino e ricerca di ispirazione per i materiali. Prime idee: creare tre materiali, di cui uno che simuli la seta.
+- Scelta del modello del cuscino e ricerca di ispirazione per i materiali.
 
 # 3 luglio
 - Creazione della scena (con orbit controls e stats) e inserimento di due istanze del modello. 
