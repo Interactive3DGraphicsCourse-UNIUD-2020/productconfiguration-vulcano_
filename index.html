@@ -176,10 +176,8 @@
 			uniform vec3 ambientLight;
 			uniform vec3 clight;
 			uniform vec3 cspec;
-			uniform vec3 cdiff;
 			
 			// uniform texture
-			uniform sampler2D aoMap;
 			uniform sampler2D normalMap;
 			uniform sampler2D roughnessMap;
 			uniform samplerCube envMap;
@@ -206,7 +204,6 @@
 				return G1(nDotl,alpha)*G1(nDotv,alpha);
 			}
 
-			// funzione per ...
 			// http://en.wikibooks.org/wiki/GLSL_Programming/Applying_Matrix_Transformations
 			vec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {
 				return normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );
@@ -264,7 +261,7 @@
 					BRDFtotale += PI * BRDF * clight * nDotl;
 				}
 
-				vec3 outRadiance =  envLight * BRDFtotale + ambientLight*cdiff*texture2D( aoMap, uVv * textureRepeat ).xyz;
+				vec3 outRadiance =  envLight * BRDFtotale;
 				
 				// gamma encoding
 				gl_FragColor = vec4(pow( outRadiance, vec3(1.0/2.2)), 1.0);
@@ -346,7 +343,7 @@
 
 				// vettore riflessione
 				vec3 r = normalize( reflect(-worldV,worldN));
-				
+
 				vec3 envLight = textureCube( envMap, r).rgb;
 				envLight = pow( envLight, vec3(2.2)); // linearizzo la texture
 
@@ -475,10 +472,8 @@
 		};
 
 		var uniformsShiny = {
-				cspec:	{ type: "v3", value: new THREE.Vector3(0.6,0.6,0.2) }, 
-				cdiff: {type: "v3", value: new THREE.Vector3(0.05,0.05,0.05)},
+				cspec:	{ type: "v3", value: new THREE.Vector3(0.6,0.6,0.2) },
 				roughnessMap:	{ type: "t", value: roughnessMapShiny},
-				aoMap:	{ type: "t", value: aoMapShiny},
 				envMap:	{ type: "t", value: textureCubeSunset},
 				textureRepeat: { type: "v2", value: new THREE.Vector2(6,6)},
 				normalMap:	{ type: "t", value: normalMapShiny},
