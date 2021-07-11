@@ -57,7 +57,7 @@ Si è scelto di applicare alla scena un tone mapping di tipo ACES Filmic.
 ### Textures
 Le texture usate sono state scaricate dai siti [ShareTextures](www.sharetextures.com) e [TextureCan](https://www.texturecan.com). Per creare le variazioni di colore dei tessuti cotone e pelle si è modificata la diffuse map tramite Photoshop; mentre le variazioni del colore del tessuto metallizzato sono dovute alla modifica del vettore che modella la componente speculare della riflessione.
 
-### Gui
+### GUI
 La presenza di un menù web nella parte superiore della schermata simula l'inserimento del configuratore all'interno del sito web dell'azienda ACME. Nel definire l'interfaccia per la modifica dei materiali, posta nella parte centrale inferiore dello schermo, si è cercato di immaginare di rivolgersi a un pubblico di potenziali acquirenti di un sito che vende oggetti di design. È all'interno di quest'ottica che si colloca la scelta dei nomi creativi dei materiali ("Basic", "Crazy", "Elegant") e del set di cuscini ("Sunset").
 
 
