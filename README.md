@@ -1,6 +1,6 @@
 # Progetto di Product Visualization - Vulcano
 
-![scena con cuscini con tessuto cotone](imgs/scena_cotone.png)
+![scena con cuscini con tessuto cotone](imgs/scena_pelle.png)
 
 Il progetto consiste in un configuratore per visualizzare e personalizzare il set di cuscini "Sunset" venduto dall'azienda ACME. L'utente può modificare la tipologia e il colore del tessuto di rivestimento. I tessuti a disposizione sono:
 - cotone verde, rosa e azzurro
@@ -33,7 +33,7 @@ Esempi di configurazioni:
 ![cusini metallizzati viola](imgs/shiny_viola.png)
 
 ### Pelle
-![cusini pelle rossa](imgs/pelle_rossa.png)
+![cusini pelle marrone](imgs/pelle_marrone.png)
 
 
 ## Implementazione
