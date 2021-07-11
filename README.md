@@ -46,7 +46,7 @@ Per rendere possibile a three.js calcolare le tangenti dell'oggetto da passare a
 ### Shader
 Il progetto prevede un vertex shader e tre fragment shader (mai eseguiti contemporaneamente). A seconda del materiale selezionato dall'utente, il vertex shader comunica con un fragment shader diverso:
 - Un **fragment shader lambertiano** per simulare il cotone: fa uso di diffuse map, normal map, roughness map e ao map.
-- Un **microfacet fragment shader** per simulare il tessuto metallizzato: fa uso di normal map, roughness map e ao map.
+- Un **microfacet fragment shader** per simulare il tessuto metallizzato: fa uso di normal map e roughness map.
 - Un fragment **shader che combina BRDF lambertiana e BRDF speculare** per simulare la pelle: fa uso di diffuse map, specular map, normal map, roughness map e ao map.
 
 Tutti e tre gli shader considerano la luce proveniente da tre point lights (posizionate in modo tale da illuminare sia fronte sia retro dei modelli) e considerano nel calcolo dell'illuminazione anche i dati di una environment map: si tratta di una latlong map scaricata dal sito [HdriHaven](https://hdrihaven.com) e poi convertita in cubemap tramite il tool online [HDRI to Cubemap](https://matheowis.github.io/HDRI-to-CubeMap/).
