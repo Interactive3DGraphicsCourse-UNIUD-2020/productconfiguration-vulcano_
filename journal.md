@@ -10,7 +10,7 @@
 ![prime prove 3 luglio](imgs/screenshot_3_luglio.png)
 
 # 5 luglio
-- Modifica texture e codice shader per il materiale seta.
+- Prova di altre texture e decisione che il primo materiale simulerà la seta: scrittura shader.
 - Idea: il secondo materiale simulerà un tessuto metallizzato. Ricerca di foto di riferimento e texture.
 - Continuo dello sviluppo della GUI.
 
