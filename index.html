@@ -97,7 +97,6 @@
 				return G1(nDotl,alpha)*G1(nDotv,alpha);
 			}
 
-			// funzione per ...
 			// http://en.wikibooks.org/wiki/GLSL_Programming/Applying_Matrix_Transformations
 			vec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {
 				return normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );
@@ -122,10 +121,14 @@
 				vec3 v = normalize( -vPosition);
 				float nDotv = max(dot( n, v ),0.000001);
 
+				// normale e vettore in world space
 				vec3 worldN = inverseTransformDirection( n, viewMatrix );
-				vec3 worldV = cameraPosition - wPosition ;
+				vec3 worldV = cameraPosition - wPosition;
+
+				// vettore riflessione
 				vec3 r = normalize( reflect(-worldV,worldN));
-				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
+
+				vec3 envLight = textureCube( envMap, r).rgb;
 				envLight = pow( envLight, vec3(2.2)); // linearizzo la texture
 
 				cdiff = texture2D( diffuseMap, uVv*textureRepeat ).rgb;
@@ -146,7 +149,6 @@
 					float nDoth = max(dot( n, h ),0.000001);
 					float vDoth = max(dot( v, h ),0.000001);
 
-					//vec3 fresnel = FSchlick(vDoth, cspec);
 					float alpha = roughness * roughness;
 
 					vec3 BRDF = cdiff/PI;
@@ -229,10 +231,14 @@
 				vec3 v = normalize( -vPosition);
 				float nDotv = max(dot( n, v ),0.000001);
 
+				// normale e vettore in world space
 				vec3 worldN = inverseTransformDirection( n, viewMatrix );
-				vec3 worldV = cameraPosition - wPosition ;
+				vec3 worldV = cameraPosition - wPosition;
+
+				// vettore riflessione
 				vec3 r = normalize( reflect(-worldV,worldN));
-				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
+
+				vec3 envLight = textureCube( envMap, r).rgb;
 				envLight = pow( envLight, vec3(2.2)); // linearizzo la texture
 
 				roughness = texture2D( roughnessMap, uVv*textureRepeat ).r; // non serve linearizzare la roughness map
@@ -310,7 +316,6 @@
 				return G1(nDotl,alpha)*G1(nDotv,alpha);
 			}
 
-			// funzione per ...
 			// http://en.wikibooks.org/wiki/GLSL_Programming/Applying_Matrix_Transformations
 			vec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {
 				return normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );
@@ -335,10 +340,14 @@
 				vec3 v = normalize( -vPosition);
 				float nDotv = max(dot( n, v ),0.000001);
 
+				// normale e vettore in world space
 				vec3 worldN = inverseTransformDirection( n, viewMatrix );
-				vec3 worldV = cameraPosition - wPosition ;
+				vec3 worldV = cameraPosition - wPosition;
+
+				// vettore riflessione
 				vec3 r = normalize( reflect(-worldV,worldN));
-				vec3 envLight = textureCube( envMap, vec3(-r.x, r.yz)).rgb;
+				
+				vec3 envLight = textureCube( envMap, r).rgb;
 				envLight = pow( envLight, vec3(2.2)); // linearizzo la texture
 
 				cdiff = texture2D( diffuseMap, uVv*textureRepeat ).rgb;
@@ -509,8 +518,8 @@
 
 		// MATERIALI
 
-		vsFabric = document.getElementById("vertex-allshaders").textContent;
-		fsFabric = document.getElementById("fragment-cotton").textContent;
+		vsCotton = document.getElementById("vertex-allshaders").textContent;
+		fsCotton = document.getElementById("fragment-cotton").textContent;
 		
 		vsShiny = document.getElementById("vertex-allshaders").textContent;
 		fsShiny = document.getElementById("fragment-shiny").textContent;
@@ -518,12 +527,12 @@
 		vsLeather = document.getElementById("vertex-allshaders").textContent;
 		fsLeather = document.getElementById("fragment-leather").textContent;
 
-		fabricMaterial = new THREE.ShaderMaterial({ uniforms: uniformsCotton, vertexShader: vsFabric, fragmentShader: fsFabric });
+		cottonMaterial = new THREE.ShaderMaterial({ uniforms: uniformsCotton, vertexShader: vsCotton, fragmentShader: fsCotton });
 		shinyMaterial = new THREE.ShaderMaterial({ uniforms: uniformsShiny, vertexShader: vsShiny, fragmentShader: fsShiny });
 		leatherMaterial = new THREE.ShaderMaterial({ uniforms: uniformsLeather, vertexShader: vsLeather, fragmentShader: fsLeather });
 
 		// permetto update dei materiali
-		fabricMaterial.needsUpdate = true;
+		cottonMaterial.needsUpdate = true;
 		shinyMaterial.needsUpdate = true;
 		leatherMaterial.needsUpdate = true;
 		
@@ -582,9 +591,9 @@
 					geometry.computeVertexNormals();
 					THREE.BufferGeometryUtils.computeTangents(geometry);
 
-					cushion1 = new THREE.Mesh( geometry, fabricMaterial );
-					cushion2 = new THREE.Mesh( geometry, fabricMaterial );
-					cushion3 = new THREE.Mesh( geometry, fabricMaterial );
+					cushion1 = new THREE.Mesh( geometry, cottonMaterial );
+					cushion2 = new THREE.Mesh( geometry, cottonMaterial );
+					cushion3 = new THREE.Mesh( geometry, cottonMaterial );
 
 					cushion1.scale.set(0.3, 0.3, 0.3);
 					cushion1.rotation.z = 80 * Math.PI/180;
@@ -667,9 +676,9 @@
 				$("#leatherButton").css({"background-color":"white","color":"#424242"});
 
 				// cambio materiale a tutti i cuscini
-				cushion1.material = fabricMaterial;
-				cushion2.material = fabricMaterial;
-				cushion3.material = fabricMaterial;
+				cushion1.material = cottonMaterial;
+				cushion2.material = cottonMaterial;
+				cushion3.material = cottonMaterial;
 			});
 
 			// comportamento bottone "party"
