@@ -19,7 +19,7 @@
 - Decisione di creare come terzo materiale la pelle. Ricerca di texture ma non ancora implementato lo shader.
 - Aggiunta una terza istanza del modello e continuazione dell'implementazione della GUI.
 
-![aggiunta terzo modello e materiale metallizzato](imgs/screenshot_6_luglio.png)
+![aggiunta terzo modello e applicazione materiale metallizzato](imgs/screenshot_6_luglio.png)
 
 # 7 luglio
 - Ricerca e aggiunta alla scena di una cubemap usata come environment map negli shader. 
