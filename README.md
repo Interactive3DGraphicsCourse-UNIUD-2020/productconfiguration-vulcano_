@@ -27,10 +27,16 @@ Il progetto consiste nei seguenti file:
 
 ## Risultati
 
-Tessuto cotone:
-Verde                |  Rosa
-:-------------------------:|:-------------------------:
+Esempi di configurazioni:
+
+### Cotone
 ![cusini cotone verde](imgs/cotone_blu.png)  |  ![cusini cotone rosa](imgs/cotone_rosa.png)
+
+### Tessuto metallizzato trapuntato
+![cusini metallizzati viola](imgs/shiny_viola_ruotato.png)
+
+### Pelle
+![cusini pelle rossa](imgs/pelle_rossa_ruotato.png)
 
 
 
