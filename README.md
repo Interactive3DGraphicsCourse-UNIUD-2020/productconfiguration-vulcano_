@@ -1,6 +1,6 @@
 # Progetto di Product Visualization - Vulcano
 
-![scena con cuscini con tessuto cotone](images/scena_cotone.png)
+![scena con cuscini con tessuto cotone](imgs/scena_cotone.png)
 
 Il progetto consiste in un configuratore per visualizzare e personalizzare un set di cuscini venduto dall'azienda ACME. L'utente può modificare la tipologia e il colore del tessuto di rivestimento. I tessuti a disposizione sono:
 - cotone verde, rosa e azzurro
@@ -30,7 +30,7 @@ Il progetto consiste nei seguenti file:
 Tessuto cotone:
 Verde                |  Rosa
 :-------------------------:|:-------------------------:
-![cusini cotone verde](images/cotone_blu.png)  |  ![cusini cotone rosa](images/cotone_rosa.png)
+![cusini cotone verde](imgs/cotone_blu.png)  |  ![cusini cotone rosa](imgs/cotone_rosa.png)
 
 
 
