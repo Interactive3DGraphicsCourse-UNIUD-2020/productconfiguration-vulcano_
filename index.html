@@ -564,7 +564,7 @@
 			scene.background = textureCubeSunset;
 
 			// tone mapping
-			renderer.toneMapping = THREE.LinearToneMapping;
+			renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
 		
 			
@@ -625,6 +625,7 @@
 
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
 			controls.enablePan = false;
+			controls.maxPolarAngle = Math.PI/2;
 			controls.minDistance = 200;
 			controls.maxDistance = 400;
 			controls.addEventListener('change', Render);
