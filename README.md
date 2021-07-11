@@ -1,12 +1,38 @@
-# ProductVisualization
+# Progetto di Product Visualization - Vulcano
 
-![Image from Ford Configurator, developed in three.js](images/ford-configurator.jpg)
+![scena con cuscini con tessuto cotone](images/scena_cotone.png)
 
-READ CAREFULLY this document BEFORE you start!
+Il progetto consiste in un configuratore per visualizzare e personalizzare un set di cuscini venduto dall'azienda ACME. L'utente può modificare la tipologia e il colore del tessuto di rivestimento. I tessuti a disposizione sono:
+- cotone verde, rosa e azzurro
+- tessuto metallizzato verde, viola e blu
+- pelle rossa, marrone e blu.
 
-## Prerequisites
+L'utente può osservare da più punti di vista il set di cuscini zoomando e ruotando la telecamera tramite l'uso del mouse.
 
-- read carefully all slides and notes up to lecture 20 before you start. Try the proposed exercises. 
+- overall description: what your project is about and the files it uses.
+- results, including images of the scenes created, taken in a way that clearly illustrates that they satisfy the specification.
+- brief explanation of the process that you used to make your scene. Include tools, assets, and planning steps.
+
+## File
+Il progetto consiste nei seguenti file:
+- index.hmtl: pagina web che contiene il configuratore
+- css: cartella contenente il file css style.css
+- imgs: cartella per il logo ACME e le immagini contenute nel readme e nel journal
+- libs: cartella contenente i file javascript necessari al funzionamento del configuratore
+    - file per il funzionamento di three.js
+    - libreria BufferedGeometryToIndexed.js ([fonte](https://github.com/Fyrestar/THREE.BufferGeometry-toIndexed)) necessaria per indicizzare il modello 3D
+- models: cartella contenente il file 3D del cuscino
+- textures: cartella contenente le texture dei materiali e la cubemap
+
+
+## Risultati
+
+Tessuto cotone:
+Verde                |  Rosa
+:-------------------------:|:-------------------------:
+![cusini cotone verde](images/cotone_blu.png)  |  ![cusini cotone rosa](images/cotone_rosa.png)
+
+
 
 ## Hints
 
@@ -48,33 +74,27 @@ Try to make it look like a simple, but real portion of an e-commerce site, not a
 
 9. Write a concise report by overwriting this file.
 
-## Starting code
 
-There is no specific starting code for this project. 
 
-## Documenting and report
-
-For project documentation and reporting, we use the [markdown format](https://daringfireball.net/projects/markdown/syntax), which is also the format of this document. Markdown is a lightweight markup language with plain text formatting syntax which is easy and quick to write, very human-readable, and that can be converted to HTML.
-
-If you need more features than the ones that markdown provides (e.g. writing equations), you can use one of its extensions called [markdeep](https://casual-effects.com/markdeep/).
 
 You are required to document your project in two ways:
 
 - maintain a journal (in a file called journal.md) describing key design decisions, changes, bug symptoms and solutions, including screenshots.
 - create a report (by overwriting this file).
 
-The report should be as brief as possible while covering the following points:
-
-- overall description: what your project is about and the files it uses.
-- results, including images of the scenes created, taken in a way that clearly illustrates that they satisfy the specification.
-- brief explanation of the process that you used to make your scene. Include tools, assets, and planning steps.
 
 ## Constraints
 
-If you use textures / 3D models / substances / ..., make sure that you have the rights to include them. For example, search for images that come with a [CC Attribution, ShareAlike or NonCommercial licences](https://creativecommons.org/share-your-work/licensing-types-examples/).
+ mention any source of inspiration in your journal and final report.
 
-In this project, you are allowed to re-use assets taken elsewhere, but **entirely copying** others' work, even with slight modifications, is forbidden and will have serious consequences beyond the deletion of your project. In any case, mention any source of inspiration in your journal and final report.
+
+
+
 
 ## Credits
 
-The image above comes from a [Ford car configurator built in three.js](http://www.ford.com/cars/mustang/customizer/#!/customize).
+[Modello del cuscino](https://www.turbosquid.com/3d-models/cushion-sofa-pillow-3d-model-1222929) (Turbosquid.com)
+[Texture cotone](https://www.sharetextures.com/textures/fabric/light-green-fabric-52/) (sharetextures.com)
+[Texture tessuto metallizzato](https://www.texturecan.com/details/144/) (texturecan.com)
+[Texture pelle](https://www.sharetextures.com/textures/fabric/leather-3/) (sharetextures.com)
+Libreria [BufferGeometryToIndexed.js](https://github.com/Fyrestar/THREE.BufferGeometry-toIndexed)
