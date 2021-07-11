@@ -54,5 +54,6 @@
 
 # 11 luglio
 - Modifica degli orbit controls in modo da limitare il movimento verticale della telecamera.
+- Pulizia del codice.
 - Scrittura del file readme e del file journal (precedentemente tenuto solo in locale in formato txt).
 
