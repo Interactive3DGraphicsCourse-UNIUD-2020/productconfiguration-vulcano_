@@ -80,23 +80,6 @@
 			float roughness;
 			const float PI = 3.14159;
 
-			// funzioni per il calcolo della BRDF
-			vec3 FSchlick(float vDoth, vec3 f0) {
-				return f0 + (vec3(1.0)-f0)*pow(1.0 - vDoth,5.0);
-			}
-			float DGGX(float NoH, float alpha) {
-				float alpha2 = alpha * alpha;
-				float k = NoH*NoH * (alpha2 - 1.0) + 1.0;
-    			return alpha2 / (PI * k * k );
-			}
-			float G1(float nDotv, float alpha) {
-				float alpha2 = alpha*alpha;
-				return 2.0 * (nDotv / (nDotv + sqrt(alpha2 + (1.0-alpha2)*nDotv*nDotv )));
-			}
-			float GSmith(float nDotv, float nDotl, float alpha) {
-				return G1(nDotl,alpha)*G1(nDotv,alpha);
-			}
-
 			// http://en.wikibooks.org/wiki/GLSL_Programming/Applying_Matrix_Transformations
 			vec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {
 				return normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );
@@ -119,7 +102,6 @@
         		vec3 n = normalize( vTBN * mapN );
 
 				vec3 v = normalize( -vPosition);
-				float nDotv = max(dot( n, v ),0.000001);
 
 				// normale e vettore in world space
 				vec3 worldN = inverseTransformDirection( n, viewMatrix );
@@ -145,9 +127,6 @@
 					vec3 h = normalize( v + l);
 
 					float nDotl = max(dot( n, l ),0.000001); // il prodotto non deve mai essere zero
-					float lDoth = max(dot( l, h ),0.000001);
-					float nDoth = max(dot( n, h ),0.000001);
-					float vDoth = max(dot( v, h ),0.000001);
 
 					float alpha = roughness * roughness;
 
